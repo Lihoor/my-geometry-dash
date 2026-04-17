@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>GEOMETRY DASH | FULL REPLICA</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Oswald', sans-serif; color: white; }
+        #bg { position: absolute; width: 100%; height: 100%; z-index: -1; background: linear-gradient(180deg, #0a3a6a 0%, #000); }
+        
+        .screen { position: absolute; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 20; background: rgba(0,0,0,0.5); }
+        .active { display: flex; }
+
+        .gd-btn {
+            background: #2af598; border: 4px solid #fff; padding: 15px 40px; font-size: 25px; 
+            cursor: pointer; box-shadow: 0 5px 0 #16a34a; margin: 10px; border-radius: 10px; color: black;
+        }
+        .blue-btn { background: #3b82f6; box-shadow: 0 5px 0 #1d4ed8; }
+
+        #game-ui { position: absolute; top: 10px; width: 100%; display: none; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 10; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+
+<div id="bg"></div>
+
+<div id="m-lobby" class="screen active">
+    <h1 style="font-size: 70px; text-shadow: 4px 4px #000;">GEOMETRY DASH</h1>
+    <div style="display:flex; align-items:center;">
+        <button class="gd-btn" onclick="changeLvl(-1)">◀</button>
+        <div style="text-align:center; width: 300px;">
+            <h2 id="lvl-name" style="font-size: 40px; margin:0;">STEREO MADNESS</h2>
+            <p id="lvl-diff" style="color:#ffd700;">NORMAL ⭐⭐</p>
+        </div>
+        <button class="gd-btn" onclick="changeLvl(1)">▶</button>
+    </div>
+    <button class="gd-btn" style="font-size:40px; padding: 20px 80px;" onclick="initGame()">PLAY</button>
+</div>
+
+<div id="m-pause" class="screen">
+    <h1 style="font-size: 60px;">PAUSED</h1>
+    <button class="gd-btn" onclick="resume()">RESUME</button>
+    <button id="pract-btn" class="gd-btn blue-btn" onclick="togglePractice()">PRACTICE: OFF</button>
+    <button class="gd-btn" style="background:#ff4444;" onclick="exitToLobby()">EXIT</button>
+</div>
+
+<div id="game-ui">
+    <div>PROGRESS: <span id="prog-val">0</span>%</div>
+    <div id="pract-label" style="color:#2af598; display:none;">PRACTICE MODE</div>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    let state = 'LOBBY';
+    let curLvl = 0;
+    let isPractice = false;
+    let checkpoints = [];
+
+    const levels = [
+        { 
+            name: "STEREO MADNESS", diff: "NORMAL ⭐⭐", bg: "#0a3a6a",
+            map: [[500,0],[800,0],[1100,1],[1140,1],[1400,0],[1700,1],[1740,1],[1780,1],[2100,0],[2140,0]] 
+        },
+        { 
+            name: "BACK ON TRACK", diff: "EASY ⭐⭐⭐", bg: "#6a0a5a",
+            map: [[400,1],[600,1],[800,0],[1000,1],[1200,1],[1500,0],[1540,0],[1900,1],[2100,1]] 
+        }
+    ];
+
+    const player = {
+        x: 150, y: 0, size: 42, dy: 0, grav: 0.9, jump: -15, rot: 0,
+        update(ground) {
+            this.dy += this.grav;
+            this.y += this.dy;
+            if (this.y > ground - this.size) {
+                this.y = ground - this.size;
+                this.dy = 0;
+                this.rot = Math.round(this.rot / 90) * 90;
+            } else { this.rot += 7; }
+        }
+    };
+
+    let camX = 0;
+    let activeObs = [];
+
+    function changeLvl(d) {
+        curLvl = (curLvl + d + levels.length) % levels.length;
+        document.getElementById('lvl-name').innerText = levels[curLvl].name;
+        document.getElementById('lvl-diff').innerText = levels[curLvl].diff;
+        document.getElementById('bg').style.background = levels[curLvl].bg;
+    }
+
+    function initGame() {
+        state = 'PLAY';
+        camX = 0;
+        player.y = 0;
+        player.dy = 0;
+        checkpoints = [];
+        activeObs = levels[curLvl].map(o => ({x: o[0], y: o[1] === 0 ? 0 : -42, type: o[1] === 0 ? 'spike' : 'block'}));
+        
+        document.getElementById('m-lobby').classList.remove('active');
+        document.getElementById('game-ui').style.display = 'flex';
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        loop();
+    }
+
+    function loop() {
+        if(state !== 'PLAY') return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let ground = canvas.height - 150;
+
+        // Ground & Grid
+        ctx.fillStyle = "#001"; ctx.fillRect(0, ground, canvas.width, 150);
+        ctx.strokeStyle = "rgba(255,255,255,0.1)";
+        for(let i=0; i<canvas.width; i+=50) {
+            ctx.beginPath(); ctx.moveTo(i-(camX%50), 0); ctx.lineTo(i-(camX%50), ground); ctx.stroke();
+        }
+
+        camX += 8;
+        player.update(ground);
+
+        // Practice Checkpoints
+        if(isPractice && Math.floor(camX) % 100 === 0) {
+            checkpoints.push({cx: camX, cy: player.y});
+            if(checkpoints.length > 5) checkpoints.shift();
+        }
+
+        activeObs.forEach(o => {
+            let ox = o.x - camX + player.x;
+            if(o.type === 'spike') {
+                ctx.fillStyle = "#f44"; ctx.beginPath();
+                ctx.moveTo(ox, ground); ctx.lineTo(ox+21, ground-42); ctx.lineTo(ox+42, ground); ctx.fill();
+                if(player.x+30 > ox && player.x+10 < ox+30 && player.y+35 > ground-35) die();
+            } else {
+                ctx.fillStyle = "#333"; ctx.fillRect(ox, ground + o.y, 42, 42);
+                ctx.strokeStyle = "#fff"; ctx.strokeRect(ox, ground + o.y, 42, 42);
+                if(player.x+38 > ox && player.x < ox+38) {
+                    let boxTop = ground + o.y;
+                    if(player.y+42 > boxTop && player.y+42 < boxTop+20 && player.dy >= 0) {
+                        player.y = boxTop - 42; player.dy = 0;
+                    } else if(player.y+38 > boxTop) die();
+                }
+            }
+        });
+
+        // Player
+        ctx.save(); ctx.translate(player.x+21, player.y+21); ctx.rotate(player.rot*Math.PI/180);
+        ctx.fillStyle = "#2af598"; ctx.fillRect(-21, -21, 42, 42); ctx.strokeStyle="#fff"; ctx.strokeRect(-21,-21,42,42); ctx.restore();
+
+        document.getElementById('prog-val').innerText = Math.min(100, Math.floor(camX/30));
+        requestAnimationFrame(loop);
+    }
+
+    function die() {
+        if(isPractice && checkpoints.length > 0) {
+            let cp = checkpoints[checkpoints.length-1];
+            camX = cp.cx; player.y = cp.cy; player.dy = 0;
+        } else {
+            state = 'LOBBY';
+            document.getElementById('m-lobby').classList.add('active');
+            document.getElementById('game-ui').style.display = 'none';
+        }
+    }
+
+    function resume() { 
+        state = 'PLAY'; 
+        document.getElementById('m-pause').classList.remove('active'); 
+        loop();
+    }
+
+    function togglePractice() {
+        isPractice = !isPractice;
+        document.getElementById('pract-btn').innerText = "PRACTICE: " + (isPractice ? "ON" : "OFF");
+        document.getElementById('pract-label').style.display = isPractice ? 'block' : 'none';
+    }
+
+    function exitToLobby() {
+        state = 'LOBBY';
+        document.getElementById('m-pause').classList.remove('active');
+        document.getElementById('m-lobby').classList.add('active');
+        document.getElementById('game-ui').style.display = 'none';
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if(e.key === 'Escape') {
+            if(state === 'PLAY') { state = 'PAUSE'; document.getElementById('m-pause').classList.add('active'); }
+            else if(state === 'PAUSE') resume();
+        }
+        if(e.code === 'Space' && state === 'PLAY' && player.dy === 0) player.dy = player.jump;
+    });
+
+    canvas.addEventListener('mousedown', () => { if(state === 'PLAY' && player.dy === 0) player.dy = player.jump; });
+</script>
+</body>
+</html>
