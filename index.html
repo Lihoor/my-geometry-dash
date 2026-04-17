@@ -2,66 +2,51 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <title>GEOMETRY DASH ULTIMATE REPLICA</title>
+    <title>GEOMETRY DASH - THE FINAL LEVEL</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Oswald', sans-serif; color: white; user-select: none; }
-        canvas { display: block; filter: saturate(1.2) contrast(1.1); }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Oswald', sans-serif; color: white; }
+        canvas { display: block; }
         
-        /* Interfata UI */
-        .overlay { position: absolute; inset: 0; display: none; justify-content: center; align-items: center; flex-direction: column; background: rgba(0,0,0,0.8); z-index: 100; text-align: center; }
-        .active { display: flex; }
-        
-        h1 { font-size: 80px; margin: 0; text-shadow: 4px 4px #000, 0 0 20px rgba(42,245,152,0.5); }
-        .btn { 
-            background: #2af598; border: 4px solid #fff; padding: 15px 50px; font-size: 30px; 
-            cursor: pointer; margin: 10px; border-radius: 15px; color: #000; font-weight: bold;
-            box-shadow: 0 6px 0 #16a34a; transition: 0.1s;
+        .overlay { 
+            position: absolute; inset: 0; display: none; 
+            justify-content: center; align-items: center; 
+            flex-direction: column; background: rgba(0,0,0,0.85); z-index: 100; 
         }
-        .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #16a34a; }
-        
-        /* Icon Kit */
-        .skin-container { display: flex; gap: 15px; margin: 20px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; }
-        .skin-box { width: 60px; height: 60px; border: 3px solid #fff; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 30px; }
-        .color-box { width: 40px; height: 40px; border: 2px solid #fff; cursor: pointer; }
-        
-        #hud { position: absolute; top: 20px; width: 100%; display: none; justify-content: center; font-size: 40px; z-index: 50; pointer-events: none; }
+        .active { display: flex; }
+
+        .btn {
+            background: #2af598; border: 6px solid #fff; padding: 25px 80px; 
+            font-size: 45px; cursor: pointer; border-radius: 20px; 
+            color: #000; font-weight: bold; margin: 15px; box-shadow: 0 10px 0 #16a34a;
+        }
+        .btn:active { transform: translateY(10px); box-shadow: none; }
+
+        #hud {
+            position: absolute; top: 30px; width: 100%; text-align: center;
+            font-size: 50px; z-index: 10; pointer-events: none; text-shadow: 3px 3px #000;
+        }
     </style>
 </head>
 <body>
 
-<div id="hud"><span id="prog-val">0</span>%</div>
+<div id="hud">0%</div>
 
-<div id="m-lobby" class="overlay active">
-    <h1>GEOMETRY DASH</h1>
-    <p>ULTIMATE EDITION</p>
-    
-    <div class="skin-container">
-        <div class="skin-box" onclick="setSkin('cube')">⬜</div>
-        <div class="skin-box" onclick="setSkin('X')">❌</div>
-        <div class="skin-box" onclick="setSkin('robot')">🤖</div>
-        <div class="skin-box" onclick="setSkin('smile')">😊</div>
-    </div>
-    
-    <div class="skin-container">
-        <div class="color-box" style="background: #2af598;" onclick="setColor('#2af598')"></div>
-        <div class="color-box" style="background: #facc15;" onclick="setColor('#facc15')"></div>
-        <div class="color-box" style="background: #ef4444;" onclick="setColor('#ef4444')"></div>
-        <div class="color-box" style="background: #3b82f6;" onclick="setColor('#3b82f6')"></div>
-    </div>
-
-    <button class="btn" onclick="init()">▶ PLAY</button>
+<div id="ui-start" class="overlay active">
+    <h1 style="font-size: 100px; margin-bottom: 50px;">STEREO MADNESS</h1>
+    <button class="btn" onclick="start()">START GAME</button>
 </div>
 
-<div id="m-pause" class="overlay">
-    <h1>PAUSED</h1>
+<div id="ui-pause" class="overlay">
+    <h1 style="font-size: 80px;">PAUSED</h1>
     <button class="btn" onclick="resume()">RESUME</button>
-    <button class="btn" style="background:#ff4d4d;" onclick="location.reload()">LOBBY</button>
+    <button class="btn" style="background:#ff4444;" onclick="location.reload()">LOBBY</button>
 </div>
 
-<div id="m-finish" class="overlay">
-    <h1 style="color: gold;">LEVEL COMPLETE!</h1>
-    <button class="btn" onclick="location.reload()">AGAIN</button>
+<div id="ui-win" class="overlay">
+    <h1 style="font-size: 100px; color: gold;">LEVEL COMPLETE!</h1>
+    <p style="font-size: 40px;">Ai dovedit Stereo Madness-ul!</p>
+    <button class="btn" onclick="location.reload()">REPLAY</button>
 </div>
 
 <canvas id="game"></canvas>
@@ -70,19 +55,23 @@
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     
-    let state = 'MENU', camX = 0, particles = [], groundY;
-    let selectedSkin = 'cube', selectedColor = '#2af598';
+    let isRunning = false, isPaused = false, camX = 0, groundY;
+    const levelEnd = 8000; // Harta e lunga de 8000 de pixeli
 
-    // Generare harta lunga
-    const levelMap = [];
-    for(let i=1; i<150; i++) {
-        let type = Math.random() > 0.4 ? 0 : 1; // 0=spike, 1=bloc
-        levelMap.push({x: i * 450 + (Math.random()*200), type: type, h: type === 1 ? (Math.random() > 0.5 ? 40 : 80) : 0});
-    }
-    const finishLine = levelMap[levelMap.length-1].x + 1000;
+    // Harta Reala Pro (Obstacole Mari)
+    // [x, tip, inaltime_extra] | tip 0=spike, 1=bloc
+    const map = [
+        [800, 0], [1200, 0], [1500, 1], [1570, 1], [1900, 0], [1980, 0],
+        [2400, 1, 60], [2470, 1, 60], [2800, 0], [2860, 0], [2920, 0], // Triple Spike
+        [3400, 1], [3470, 1, 70], [3540, 1, 140],
+        [4200, 0], [4600, 1], [4670, 0], [5000, 1, 80], [5400, 0], [5480, 0],
+        [6000, 1], [6070, 1], [6140, 1], [6500, 0], [6800, 1, 150],
+        [7400, 0], [7460, 0]
+    ];
 
     const player = {
-        x: 250, y: 0, size: 45, dy: 0, grav: 1.0, jump: -17, rot: 0,
+        x: 250, y: 0, size: 60, // DIMENSIUNE MARE
+        dy: 0, grav: 1.1, jump: -19, rot: 0,
         update() {
             this.dy += this.grav;
             this.y += this.dy;
@@ -90,112 +79,104 @@
                 this.y = groundY - this.size;
                 this.dy = 0;
                 this.rot = Math.round(this.rot/90)*90;
-            } else { this.rot += 8; }
+            } else { this.rot += 9; }
         }
     };
 
-    function setSkin(s) { selectedSkin = s; }
-    function setColor(c) { selectedColor = c; }
-
-    function init() {
+    function start() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        groundY = canvas.height - 180;
-        player.y = groundY - 45;
-        state = 'PLAY';
-        document.getElementById('m-lobby').classList.remove('active');
-        document.getElementById('hud').style.display = 'flex';
+        groundY = canvas.height - 100;
+        player.y = groundY - 60;
+        camX = 0; isRunning = true;
+        document.getElementById('ui-start').classList.remove('active');
         loop();
     }
 
     function loop() {
-        if(state !== 'PLAY') return;
+        if(!isRunning || isPaused) return;
+
+        // Background
+        ctx.fillStyle = "#004080";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Render Fundal
-        let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        grd.addColorStop(0, "#003366"); grd.addColorStop(1, "#000");
-        ctx.fillStyle = grd; ctx.fillRect(0,0,canvas.width, canvas.height);
+        // Ground (Podea mare)
+        ctx.fillStyle = "#000d1a";
+        ctx.fillRect(0, groundY, canvas.width, 100);
+        ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 4;
+        ctx.strokeRect(-5, groundY, canvas.width+10, 5);
 
-        // Render Ground
-        ctx.fillStyle = "#000a1a"; ctx.fillRect(0, groundY, canvas.width, 180);
-        ctx.strokeStyle = "rgba(255,255,255,0.2)";
-        for(let i=0; i<canvas.width; i+=60) {
-            ctx.strokeRect(i - (camX % 60), groundY, 60, 60);
-        }
-
-        camX += 10;
+        camX += 11; // VITEZA MAI MARE
         player.update();
 
-        // Particles Logic
-        if(player.dy === 0) {
-            particles.push({x: player.x, y: groundY, s: Math.random()*5, life: 1});
+        // Check Victory
+        if(camX > levelEnd) {
+            isRunning = false;
+            document.getElementById('ui-win').classList.add('active');
+            return;
         }
-        particles.forEach((p, i) => {
-            p.life -= 0.05; p.x -= 5;
-            ctx.fillStyle = `rgba(255,255,255,${p.life})`;
-            ctx.fillRect(p.x, p.y, p.s, p.s);
-            if(p.life <= 0) particles.splice(i, 1);
-        });
 
-        // Obstacole & Coliziuni
-        levelMap.forEach(obs => {
-            let rx = obs.x - camX + player.x;
-            if(rx < -100 || rx > canvas.width) return;
+        // Obstacole
+        map.forEach(obs => {
+            let ox = obs[0] - camX + player.x;
+            let oy = groundY - (obs[2] || 0);
 
-            if(obs.type === 0) { // SPIKE
-                ctx.fillStyle = "#ff3333"; ctx.beginPath();
-                ctx.moveTo(rx, groundY); ctx.lineTo(rx+22, groundY-45); ctx.lineTo(rx+45, groundY); ctx.fill();
-                ctx.strokeStyle="#fff"; ctx.stroke();
-                if(player.x+35 > rx && player.x+10 < rx+35 && player.y+40 > groundY-40) die();
-            } else { // BLOCK
-                let by = groundY - obs.h - 45;
-                ctx.fillStyle = "#111"; ctx.fillRect(rx, by, 45, 45);
-                ctx.strokeStyle="#fff"; ctx.strokeRect(rx, by, 45, 45);
-                if(player.x+42 > rx && player.x < rx+42) {
-                    if(player.y+45 > by && player.y+45 < by+20 && player.dy >= 0) {
-                        player.y = by - 45; player.dy = 0;
-                    } else if(player.y+40 > by) die();
+            if(ox < -200 || ox > canvas.width + 200) return;
+
+            if(obs[1] === 0) { // SPIKE MARE
+                ctx.fillStyle = "#ff3333";
+                ctx.beginPath();
+                ctx.moveTo(ox, groundY);
+                ctx.lineTo(ox+35, groundY-70);
+                ctx.lineTo(ox+70, groundY);
+                ctx.fill();
+                ctx.strokeStyle="#fff"; ctx.lineWidth=2; ctx.stroke();
+                // Hitbox
+                if(player.x+50 > ox && player.x+10 < ox+60 && player.y+55 > groundY-60) die();
+            } else { // BLOC MARE
+                ctx.fillStyle = "#1a1a1a";
+                ctx.fillRect(ox, oy-70, 70, 70);
+                ctx.strokeStyle = "#fff"; ctx.strokeRect(ox, oy-70, 70, 70);
+                // Hitbox Bloc
+                if(player.x+58 > ox && player.x < ox+65) {
+                    if(player.y+60 > oy-70 && player.y+60 < oy-40 && player.dy >= 0) {
+                        player.y = oy-130; player.dy = 0;
+                    } else if(player.y+50 > oy-70) die();
                 }
             }
         });
 
-        // Finish Line
-        let fx = finishLine - camX + player.x;
-        ctx.fillStyle = "gold"; ctx.fillRect(fx, 0, 20, groundY);
-
-        // Player Draw (SKINS)
+        // Player (Cub Galben Mare)
         ctx.save();
-        ctx.translate(player.x+22, player.y+22); ctx.rotate(player.rot*Math.PI/180);
-        ctx.fillStyle = selectedColor; ctx.fillRect(-22, -22, 45, 45);
-        ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.strokeRect(-22, -22, 45, 45);
-        
-        ctx.fillStyle = "rgba(0,0,0,0.3)";
-        if(selectedSkin === 'X') { ctx.font = "40px Arial"; ctx.fillText("X", -13, 15); }
-        if(selectedSkin === 'robot') { ctx.fillRect(-15, -15, 10, 10); ctx.fillRect(5, -15, 10, 10); ctx.fillRect(-15, 5, 30, 5); }
-        if(selectedSkin === 'smile') { ctx.font = "30px Arial"; ctx.fillText("ツ", -15, 12); }
+        ctx.translate(player.x+30, player.y+30);
+        ctx.rotate(player.rot * Math.PI / 180);
+        ctx.fillStyle = "#ffff00"; ctx.fillRect(-30, -30, 60, 60);
+        ctx.strokeStyle = "#000"; ctx.lineWidth = 4; ctx.strokeRect(-30, -30, 60, 60);
         ctx.restore();
 
-        // UI Progress
-        let prog = Math.min(100, Math.floor((camX/finishLine)*100));
-        document.getElementById('prog-val').innerText = prog;
-        if(prog >= 100) { state = 'FINISH'; document.getElementById('m-finish').classList.add('active'); }
+        // Progres
+        document.getElementById('hud').innerText = Math.min(100, Math.floor((camX/levelEnd)*100)) + "%";
 
         requestAnimationFrame(loop);
     }
 
     function die() {
-        state = 'DIE';
-        setTimeout(() => { location.reload(); }, 300);
+        isRunning = false;
+        setTimeout(start, 400);
     }
 
     function resume() {
-        state = 'PLAY'; document.getElementById('m-pause').classList.remove('active'); loop();
+        isPaused = false;
+        document.getElementById('ui-pause').classList.remove('active');
+        loop();
     }
 
     window.addEventListener('keydown', (e) => {
-        if(e.code === 'Space' && player.dy === 0) player.dy = player.jump;
-        if(e.key === 'Escape' && state === 'PLAY') {
-            state = 'PAUSE'; document.getElementById('m-pause').classList.add('active');
+        if((e.code === 'Space' || e.key === 'ArrowUp') && player.dy === 0) player.dy = player.jump;
+        if(e.key === 'Escape') {
+            isPaused = !isPaused;
+            document.getElementById('ui-pause').classList.toggle('active', isPaused);
+            if(!isPaused) loop();
         }
     });
     canvas.addEventListener('mousedown', () => { if(player.dy === 0) player.dy = player.jump; });
