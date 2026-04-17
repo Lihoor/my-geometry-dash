@@ -2,30 +2,15 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <title>GEOMETRY DASH - THE FINAL LEVEL</title>
+    <title>GD - UNLIMITED JUMP EDITION</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Oswald', sans-serif; color: white; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Oswald', sans-serif; touch-action: none; }
         canvas { display: block; }
-        
-        .overlay { 
-            position: absolute; inset: 0; display: none; 
-            justify-content: center; align-items: center; 
-            flex-direction: column; background: rgba(0,0,0,0.85); z-index: 100; 
-        }
+        #hud { position: absolute; top: 20px; width: 100%; text-align: center; font-size: 50px; color: white; pointer-events: none; text-shadow: 3px 3px #000; z-index: 10; }
+        .overlay { position: absolute; inset: 0; display: none; justify-content: center; align-items: center; flex-direction: column; background: rgba(0,0,0,0.8); z-index: 100; color: white; }
         .active { display: flex; }
-
-        .btn {
-            background: #2af598; border: 6px solid #fff; padding: 25px 80px; 
-            font-size: 45px; cursor: pointer; border-radius: 20px; 
-            color: #000; font-weight: bold; margin: 15px; box-shadow: 0 10px 0 #16a34a;
-        }
-        .btn:active { transform: translateY(10px); box-shadow: none; }
-
-        #hud {
-            position: absolute; top: 30px; width: 100%; text-align: center;
-            font-size: 50px; z-index: 10; pointer-events: none; text-shadow: 3px 3px #000;
-        }
+        .btn { background: #2af598; border: 5px solid #fff; padding: 20px 60px; font-size: 40px; cursor: pointer; border-radius: 15px; color: #000; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -33,20 +18,13 @@
 <div id="hud">0%</div>
 
 <div id="ui-start" class="overlay active">
-    <h1 style="font-size: 100px; margin-bottom: 50px;">STEREO MADNESS</h1>
-    <button class="btn" onclick="start()">START GAME</button>
-</div>
-
-<div id="ui-pause" class="overlay">
-    <h1 style="font-size: 80px;">PAUSED</h1>
-    <button class="btn" onclick="resume()">RESUME</button>
-    <button class="btn" style="background:#ff4444;" onclick="location.reload()">LOBBY</button>
+    <h1 style="font-size: 80px;">MEGA LEVEL</h1>
+    <button class="btn" onclick="start()">START</button>
 </div>
 
 <div id="ui-win" class="overlay">
-    <h1 style="font-size: 100px; color: gold;">LEVEL COMPLETE!</h1>
-    <p style="font-size: 40px;">Ai dovedit Stereo Madness-ul!</p>
-    <button class="btn" onclick="location.reload()">REPLAY</button>
+    <h1 style="font-size: 100px; color: gold;">FINALIZAT!</h1>
+    <button class="btn" onclick="location.reload()">JOACĂ IAR</button>
 </div>
 
 <canvas id="game"></canvas>
@@ -54,32 +32,33 @@
 <script>
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
-    
-    let isRunning = false, isPaused = false, camX = 0, groundY;
-    const levelEnd = 8000; // Harta e lunga de 8000 de pixeli
+    let isRunning = false, camX = 0, groundY;
+    let isMouseDown = false; // Monitorizare click apăsat
 
-    // Harta Reala Pro (Obstacole Mari)
-    // [x, tip, inaltime_extra] | tip 0=spike, 1=bloc
-    const map = [
-        [800, 0], [1200, 0], [1500, 1], [1570, 1], [1900, 0], [1980, 0],
-        [2400, 1, 60], [2470, 1, 60], [2800, 0], [2860, 0], [2920, 0], // Triple Spike
-        [3400, 1], [3470, 1, 70], [3540, 1, 140],
-        [4200, 0], [4600, 1], [4670, 0], [5000, 1, 80], [5400, 0], [5480, 0],
-        [6000, 1], [6070, 1], [6140, 1], [6500, 0], [6800, 1, 150],
-        [7400, 0], [7460, 0]
-    ];
+    const levelEnd = 15000; // Harta foarte lunga
+    const map = [];
+    for(let i=1; i<100; i++) {
+        map.push({x: i * 600 + (Math.random()*300), type: Math.random() > 0.5 ? 0 : 1});
+    }
 
     const player = {
-        x: 250, y: 0, size: 60, // DIMENSIUNE MARE
-        dy: 0, grav: 1.1, jump: -19, rot: 0,
+        x: 200, y: 0, size: 60, dy: 0, grav: 1.2, jump: -20, rot: 0,
         update() {
             this.dy += this.grav;
             this.y += this.dy;
-            if(this.y > groundY - this.size) {
+
+            if(this.y >= groundY - this.size) {
                 this.y = groundY - this.size;
                 this.dy = 0;
-                this.rot = Math.round(this.rot/90)*90;
-            } else { this.rot += 9; }
+                this.rot = Math.round(this.rot / 90) * 90;
+                
+                // SĂRITURA CONTINUĂ: Dacă mouse-ul e jos, sari imediat ce atingi solul
+                if(isMouseDown) {
+                    this.dy = this.jump;
+                }
+            } else {
+                this.rot += 10;
+            }
         }
     };
 
@@ -88,98 +67,79 @@
         canvas.height = window.innerHeight;
         groundY = canvas.height - 100;
         player.y = groundY - 60;
-        camX = 0; isRunning = true;
+        isRunning = true;
         document.getElementById('ui-start').classList.remove('active');
         loop();
     }
 
     function loop() {
-        if(!isRunning || isPaused) return;
+        if(!isRunning) return;
 
         // Background
-        ctx.fillStyle = "#004080";
+        ctx.fillStyle = "#0a0a2a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Ground (Podea mare)
-        ctx.fillStyle = "#000d1a";
+        // Ground
+        ctx.fillStyle = "#000";
         ctx.fillRect(0, groundY, canvas.width, 100);
-        ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 4;
-        ctx.strokeRect(-5, groundY, canvas.width+10, 5);
+        ctx.strokeStyle = "#2af598"; ctx.lineWidth = 5;
+        ctx.strokeRect(0, groundY, canvas.width, 2);
 
-        camX += 11; // VITEZA MAI MARE
+        camX += 12;
         player.update();
 
-        // Check Victory
+        // Finish Line
         if(camX > levelEnd) {
             isRunning = false;
             document.getElementById('ui-win').classList.add('active');
             return;
         }
 
-        // Obstacole
+        // Render Obstacole
         map.forEach(obs => {
-            let ox = obs[0] - camX + player.x;
-            let oy = groundY - (obs[2] || 0);
+            let ox = obs.x - camX + player.x;
+            if(ox < -100 || ox > canvas.width) return;
 
-            if(ox < -200 || ox > canvas.width + 200) return;
-
-            if(obs[1] === 0) { // SPIKE MARE
-                ctx.fillStyle = "#ff3333";
+            if(obs.type === 0) { // SPIKE
+                ctx.fillStyle = "#ff0055";
                 ctx.beginPath();
-                ctx.moveTo(ox, groundY);
-                ctx.lineTo(ox+35, groundY-70);
-                ctx.lineTo(ox+70, groundY);
+                ctx.moveTo(ox, groundY); ctx.lineTo(ox+35, groundY-70); ctx.lineTo(ox+70, groundY);
                 ctx.fill();
-                ctx.strokeStyle="#fff"; ctx.lineWidth=2; ctx.stroke();
-                // Hitbox
-                if(player.x+50 > ox && player.x+10 < ox+60 && player.y+55 > groundY-60) die();
-            } else { // BLOC MARE
-                ctx.fillStyle = "#1a1a1a";
-                ctx.fillRect(ox, oy-70, 70, 70);
-                ctx.strokeStyle = "#fff"; ctx.strokeRect(ox, oy-70, 70, 70);
-                // Hitbox Bloc
-                if(player.x+58 > ox && player.x < ox+65) {
-                    if(player.y+60 > oy-70 && player.y+60 < oy-40 && player.dy >= 0) {
-                        player.y = oy-130; player.dy = 0;
-                    } else if(player.y+50 > oy-70) die();
-                }
+                if(player.x+45 > ox && player.x+15 < ox+55 && player.y+55 > groundY-60) die();
+            } else { // BLOC
+                ctx.fillStyle = "#333";
+                ctx.fillRect(ox, groundY-70, 70, 70);
+                ctx.strokeStyle = "#fff"; ctx.strokeRect(ox, groundY-70, 70, 70);
+                if(player.x+55 > ox && player.x < ox+65 && player.y+55 > groundY-70) die();
             }
         });
 
-        // Player (Cub Galben Mare)
+        // Player
         ctx.save();
         ctx.translate(player.x+30, player.y+30);
-        ctx.rotate(player.rot * Math.PI / 180);
-        ctx.fillStyle = "#ffff00"; ctx.fillRect(-30, -30, 60, 60);
-        ctx.strokeStyle = "#000"; ctx.lineWidth = 4; ctx.strokeRect(-30, -30, 60, 60);
+        ctx.rotate(player.rot * Math.PI/180);
+        ctx.fillStyle = "#2af598"; ctx.fillRect(-30, -30, 60, 60);
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.strokeRect(-30, -30, 60, 60);
         ctx.restore();
 
-        // Progres
-        document.getElementById('hud').innerText = Math.min(100, Math.floor((camX/levelEnd)*100)) + "%";
-
+        document.getElementById('hud').innerText = Math.floor((camX/levelEnd)*100) + "%";
         requestAnimationFrame(loop);
     }
 
     function die() {
         isRunning = false;
-        setTimeout(start, 400);
+        setTimeout(start, 200);
     }
 
-    function resume() {
-        isPaused = false;
-        document.getElementById('ui-pause').classList.remove('active');
-        loop();
-    }
+    // LISTENERI PENTRU CLICK APĂSAT (HOLD TO JUMP)
+    window.addEventListener('mousedown', () => isMouseDown = true);
+    window.addEventListener('mouseup', () => isMouseDown = false);
+    window.addEventListener('touchstart', (e) => { e.preventDefault(); isMouseDown = true; }, {passive: false});
+    window.addEventListener('touchend', () => isMouseDown = false);
 
-    window.addEventListener('keydown', (e) => {
-        if((e.code === 'Space' || e.key === 'ArrowUp') && player.dy === 0) player.dy = player.jump;
-        if(e.key === 'Escape') {
-            isPaused = !isPaused;
-            document.getElementById('ui-pause').classList.toggle('active', isPaused);
-            if(!isPaused) loop();
-        }
-    });
-    canvas.addEventListener('mousedown', () => { if(player.dy === 0) player.dy = player.jump; });
+    // KEYBOARD HOLD
+    window.addEventListener('keydown', (e) => { if(e.code === 'Space' || e.code === 'ArrowUp') isMouseDown = true; });
+    window.addEventListener('keyup', (e) => { if(e.code === 'Space' || e.code === 'ArrowUp') isMouseDown = false; });
 </script>
 </body>
 </html>
