@@ -3,46 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash Clone</title>
+    <title>Geometry Dash</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0a0a0a; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #gameContainer { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
-        #gameCanvas { display: block; background: linear-gradient(180deg, #1a0033 0%, #0d001a 100%); }
-        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        body { background: #0a0a0a; overflow: hidden; }
+        #gameContainer { position: relative; width: 100vw; height: 100vh; }
+        #gameCanvas { display: block; }
+        #ui { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; }
         #ui > * { pointer-events: auto; }
-        #progressBar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 300px; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; }
-        #progressFill { height: 100%; background: linear-gradient(90deg, #00ff88, #00ffcc); width: 0%; transition: width 0.1s linear; box-shadow: 0 0 10px #00ff88; }
-        #attemptCounter { position: absolute; top: 20px; right: 30px; color: white; font-size: 18px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        #percentDisplay { position: absolute; top: 35px; left: 50%; transform: translateX(-50%); color: white; font-size: 14px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        #progressBar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 300px; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; }
+        #progressFill { height: 100%; background: linear-gradient(90deg, #00ff88, #00ffcc); width: 0%; box-shadow: 0 0 10px #00ff88; }
+        #percentDisplay { position: absolute; top: 35px; left: 50%; transform: translateX(-50%); color: white; font-size: 14px; }
+        #attemptCounter { position: absolute; top: 20px; right: 30px; color: white; font-size: 18px; }
         #menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 100; }
-        #menu h1 { font-size: 72px; color: #fff; text-shadow: 0 0 30px #00ffcc, 0 0 60px #00ff88; margin-bottom: 20px; animation: pulse 2s ease-in-out infinite; }
+        #menu h1 { font-size: 72px; color: #fff; text-shadow: 0 0 30px #00ffcc; margin-bottom: 20px; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         #menu p { color: rgba(255,255,255,0.7); font-size: 18px; margin-bottom: 40px; }
-        .menuBtn { display: block; width: 250px; margin: 15px auto; padding: 18px 40px; font-size: 20px; font-weight: bold; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
-        .menuBtn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6); }
-        .menuBtn.play { background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%); box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4); }
-        .menuBtn.play:hover { box-shadow: 0 15px 40px rgba(0, 255, 136, 0.6); }
+        .menuBtn { display: block; width: 250px; margin: 15px auto; padding: 18px 40px; font-size: 20px; font-weight: bold; color: white; background: linear-gradient(135deg, #00ff88, #00ccff); border: none; border-radius: 50px; cursor: pointer; text-transform: uppercase; }
+        .menuBtn:hover { transform: scale(1.05); }
         #levelSelect { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 100; }
-        #levelSelect h2 { color: white; font-size: 48px; margin-bottom: 40px; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
+        #levelSelect h2 { color: white; font-size: 48px; margin-bottom: 40px; }
         .levelGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 600px; }
-        .levelBtn { width: 150px; height: 150px; border: 3px solid rgba(255,255,255,0.3); border-radius: 20px; background: rgba(255,255,255,0.1); cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        .levelBtn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); border-color: #00ff88; box-shadow: 0 0 30px rgba(0, 255, 136, 0.5); }
+        .levelBtn { width: 150px; height: 150px; border: 3px solid rgba(255,255,255,0.3); border-radius: 20px; background: rgba(255,255,255,0.1); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .levelBtn:hover { transform: scale(1.1); border-color: #00ff88; background: rgba(255,255,255,0.2); }
         .levelBtn .levelNum { font-size: 48px; font-weight: bold; }
         .levelBtn .levelName { font-size: 12px; opacity: 0.7; margin-top: 5px; }
         .levelBtn .difficulty { display: flex; gap: 3px; margin-top: 10px; }
         .levelBtn .difficulty span { width: 8px; height: 8px; border-radius: 50%; background: #444; }
-        .levelBtn .difficulty span.active { background: #ff6b6b; box-shadow: 0 0 5px #ff6b6b; }
-        #pauseMenu, #deathScreen, #winScreen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; flex-direction: column; }
-        #pauseMenu h2, #deathScreen h2, #winScreen h2 { color: white; font-size: 56px; margin-bottom: 20px; text-shadow: 0 0 30px rgba(255,255,255,0.5); }
-        #deathScreen h2 { color: #ff4444; text-shadow: 0 0 30px rgba(255, 68, 68, 0.8); }
-        #winScreen h2 { color: #00ff88; text-shadow: 0 0 30px rgba(0, 255, 136, 0.8); }
+        .levelBtn .difficulty span.active { background: #ff6b6b; }
+        #pauseMenu, #deathScreen, #winScreen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; justify-content: center; align-items: center; flex-direction: column; }
+        #pauseMenu h2, #deathScreen h2, #winScreen h2 { color: white; font-size: 56px; margin-bottom: 20px; }
+        #deathScreen h2 { color: #ff4444; }
+        #winScreen h2 { color: #00ff88; }
         #deathScreen p, #winScreen p { color: rgba(255,255,255,0.7); font-size: 24px; margin-bottom: 40px; }
-        .backBtn { position: absolute; top: 30px; left: 30px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: white; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
-        .backBtn:hover { background: rgba(255,255,255,0.2); border-color: white; }
-        #practiceMode { position: absolute; top: 60px; left: 30px; color: #ffcc00; font-size: 16px; display: none; }
-        #checkpoint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #00ff88; font-size: 32px; font-weight: bold; opacity: 0; transition: opacity 0.3s; text-shadow: 0 0 20px #00ff88; pointer-events: none; }
-        #modeIndicator { position: absolute; bottom: 30px; left: 30px; color: rgba(255,255,255,0.5); font-size: 14px; }
+        .backBtn { position: absolute; top: 30px; left: 30px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: white; padding: 10px 20px; border-radius: 25px; cursor: pointer; }
+        .backBtn:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
@@ -52,14 +47,11 @@
             <div id="progressBar"><div id="progressFill"></div></div>
             <div id="percentDisplay">0%</div>
             <div id="attemptCounter">Attempt 1</div>
-            <div id="practiceMode">PRACTICE MODE</div>
-            <div id="checkpoint">CHECKPOINT</div>
-            <div id="modeIndicator"></div>
         </div>
         <div id="menu">
             <h1>GEOMETRY DASH</h1>
             <p>Click or press SPACE to jump</p>
-            <button class="menuBtn play" onclick="showLevelSelect()">PLAY</button>
+            <button class="menuBtn" onclick="showLevelSelect()">PLAY</button>
         </div>
         <div id="levelSelect">
             <button class="backBtn" onclick="showMenu()">Back</button>
@@ -75,15 +67,16 @@
         <div id="deathScreen">
             <h2>CRASHED!</h2>
             <p id="deathPercent">Progress: 0%</p>
-            <button class="menuBtn play" onclick="restartLevel()">RETRY</button>
+            <button class="menuBtn" onclick="restartLevel()">RETRY</button>
             <button class="menuBtn" onclick="exitToMenu()">EXIT</button>
         </div>
         <div id="winScreen">
             <h2>LEVEL COMPLETE!</h2>
             <p id="winStats">Attempts: 1 | Jumps: 0</p>
-            <button class="menuBtn play" onclick="nextLevel()">NEXT LEVEL</button>
+            <button class="menuBtn" onclick="nextLevel()">NEXT LEVEL</button>
             <button class="menuBtn" onclick="exitToMenu()">EXIT</button>
-        
+        </div>
+    </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -96,44 +89,8 @@
         window.addEventListener('resize', resizeCanvas);
 
         class AudioSystem {
-            constructor() { this.audioContext = null; this.sfxEnabled = true; this.musicEnabled = true; this.musicOsc = null; this.musicGain = null; }
+            constructor() { this.audioContext = null; this.sfxEnabled = true; this.musicEnabled = true; }
             init() { this.audioContext = new (window.AudioContext || window.webkitAudioContext)(); }
-            startMusic() {
-                if (!this.musicEnabled || !this.audioContext || this.musicOsc) return;
-                this.musicGain = this.audioContext.createGain();
-                this.musicGain.connect(this.audioContext.destination);
-                this.musicGain.gain.value = 0.15;
-                this.playMusicNote(220, 0.4);
-                this.playMusicNote(220, 0.4);
-                this.playMusicNote(220, 0.4);
-                this.playMusicNote(262, 0.4);
-                this.playMusicNote(247, 0.4);
-                this.playMusicNote(220, 0.4);
-                this.playMusicNote(196, 0.4);
-                this.playMusicNote(220, 0.8);
-                setInterval(() => {
-                    if (gameState.isPlaying && this.musicEnabled) {
-                        this.playMusicNote(220, 0.4);
-                        this.playMusicNote(262, 0.2);
-                        this.playMusicNote(220, 0.4);
-                        this.playMusicNote(196, 0.2);
-                    }
-                }, 800);
-            }
-            playMusicNote(freq, duration) {
-                if (!this.audioContext || !this.musicEnabled) return;
-                const osc = this.audioContext.createOscillator();
-                const gain = this.audioContext.createGain();
-                osc.connect(gain);
-                gain.connect(this.musicGain);
-                osc.type = 'square';
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0.1, this.audioContext.currentTime);
-                gain.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + duration);
-                osc.start();
-                osc.stop(this.audioContext.currentTime + duration);
-            }
-            stopMusic() { this.musicOsc = null; }
             createOscillator(freq, type, duration, volume = 0.3) {
                 if (!this.sfxEnabled || !this.audioContext) return;
                 const osc = this.audioContext.createOscillator();
@@ -148,16 +105,40 @@
                 osc.stop(this.audioContext.currentTime + duration);
             }
             playJump() { this.createOscillator(400, 'square', 0.1, 0.2); setTimeout(() => this.createOscillator(600, 'square', 0.1, 0.15), 50); }
-            playDeath() { this.createOscillator(200, 'sawtooth', 0.3, 0.3); setTimeout(() => this.createOscillator(150, 'sawtooth', 0.3, 0.25), 100); }
-            playOrb() { this.createOscillator(800, 'sine', 0.15, 0.25); this.createOscillator(1200, 'sine', 0.1, 0.2); }
-            playWin() { [523, 659, 784, 1047].forEach((n, i) => { setTimeout(() => this.createOscillator(n, 'square', 0.3, 0.2), i * 150); }); }
+            playDeath() { this.createOscillator(200, 'sawtooth', 0.3, 0.3); }
+            playOrb() { this.createOscillator(800, 'sine', 0.15, 0.3); this.createOscillator(1200, 'sine', 0.1, 0.2); }
+            playWin() { [523, 659, 784, 1047, 784, 1047].forEach((n, i) => { setTimeout(() => this.createOscillator(n, 'square', 0.4, 0.2), i * 100); }); }
+            playClick() { this.createOscillator(1000, 'square', 0.05, 0.1); }
+            
+            startMusic() {
+                if (!this.musicEnabled || !this.audioContext) return;
+                const gain = this.audioContext.createGain();
+                gain.connect(this.audioContext.destination);
+                gain.gain.value = 0.1;
+                let note = 0;
+                const melody = [220, 220, 247, 262, 247, 220, 196, 220];
+                const loop = () => {
+                    if (gameState.isPlaying && this.musicEnabled && note < melody.length) {
+                        const osc = this.audioContext.createOscillator();
+                        osc.connect(gain);
+                        osc.type = 'square';
+                        osc.frequency.value = melody[note];
+                        const g = this.audioContext.createGain();
+                        g.connect(gain);
+                        g.gain.setValueAtTime(0.08, this.audioContext.currentTime);
+                        g.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.15);
+                        osc.start();
+                        osc.stop(this.audioContext.currentTime + 0.15);
+                        note++;
+                        setTimeout(loop, 150);
+                    }
+                };
+                loop();
+            }
         }
 
         const audio = new AudioSystem();
-
-        const gameState = { currentScreen: 'menu', currentLevel: 0, attempt: 1, isPaused: false, isPlaying: false, practiceMode: false, checkpoint: null, stats: { totalAttempts: 0, totalJumps: 0, levelsCompleted: 0 } };
-        
-        const MODES = { CUBE: 'cube', SHIP: 'ship', BALL: 'ball', UFO: 'ufo', WAVE: 'wave', ROBOT: 'robot', SPIDER: 'spider' };
+        const gameState = { currentScreen: 'menu', currentLevel: 0, attempt: 1, isPaused: false, isPlaying: false, stats: { totalJumps: 0 } };
 
         class Player {
             constructor() { this.reset(); }
@@ -168,10 +149,9 @@
                 this.height = 50;
                 this.velocityY = 0;
                 this.gravity = 0.8;
-                this.jumpForce = -15;
+                this.jumpForce = -16;
                 this.grounded = false;
                 this.rotation = 0;
-                this.mode = MODES.CUBE;
                 this.dead = false;
                 this.flipped = false;
                 this.trail = [];
@@ -185,27 +165,24 @@
                     this.y = ground - this.height;
                     this.velocityY = 0;
                     this.grounded = true;
-                    this.rotation = Math.round(this.rotation / (Math.PI / 2)) * (Math.PI / 2);
                 } else if (this.flipped && this.y <= ceiling) {
                     this.y = ceiling;
                     this.velocityY = 0;
                     this.grounded = true;
-                } else {
-                    this.grounded = false;
-                }
+                } else this.grounded = false;
                 if (!this.grounded) this.rotation += 0.15 * (this.flipped ? -1 : 1);
+                else this.rotation = Math.round(this.rotation / (Math.PI / 2)) * (Math.PI / 2);
+                
                 this.trail.push({ x: this.x, y: this.y + this.height / 2, alpha: 1 });
-                if (this.trail.length > 15) this.trail.shift();
-                this.trail.forEach(t => t.alpha -= 0.07);
+                if (this.trail.length > 12) this.trail.shift();
+                this.trail.forEach(t => t.alpha -= 0.08);
             }
             jump() {
-                if (this.dead) return;
-                if (this.grounded && this.mode === MODES.CUBE) {
-                    this.velocityY = this.jumpForce * (this.flipped ? -1 : 1);
-                    this.grounded = false;
-                    audio.playJump();
-                    gameState.stats.totalJumps++;
-                }
+                if (this.dead || !this.grounded) return;
+                this.velocityY = this.jumpForce * (this.flipped ? -1 : 1);
+                this.grounded = false;
+                audio.playJump();
+                gameState.stats.totalJumps++;
             }
             die() {
                 if (this.dead) return;
@@ -217,10 +194,10 @@
                 ctx.save();
                 this.trail.forEach((t, i) => {
                     if (t.alpha > 0) {
-                        ctx.globalAlpha = t.alpha * 0.4;
+                        ctx.globalAlpha = t.alpha * 0.5;
                         ctx.fillStyle = '#00ff88';
                         ctx.beginPath();
-                        ctx.arc(t.x - game.camera.x + 25, t.y, (i / this.trail.length) * 15, 0, Math.PI * 2);
+                        ctx.arc(t.x - game.camera.x + 25, t.y, (i / 12) * 12, 0, Math.PI * 2);
                         ctx.fill();
                     }
                 });
@@ -253,42 +230,109 @@
             }
         }
 
-        class Obstacle {
-            constructor(x, y, width, height, type = 'spike') {
-                this.x = x; this.y = y; this.width = width; this.height = height; this.type = type;
-            }
+        class Spike {
+            constructor(x, y) { this.x = x; this.y = y; this.width = 60; this.height = 60; }
             draw(cameraX) {
                 const sx = this.x - cameraX;
                 if (sx < -100 || sx > canvas.width + 100) return;
                 ctx.save();
-                ctx.translate(sx + this.width / 2, this.y + this.height / 2);
-                if (this.type === 'spike') {
-                    ctx.fillStyle = '#fff';
-                    ctx.beginPath();
-                    ctx.moveTo(0, -this.height / 2);
-                    ctx.lineTo(this.width / 2, this.height / 2);
-                    ctx.lineTo(-this.width / 2, this.height / 2);
-                    ctx.closePath();
-                    ctx.fill();
-                } else if (this.type === 'block') {
-                    ctx.fillStyle = '#4a4a6a';
-                    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-                }
+                ctx.translate(sx + 30, this.y + 30);
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.moveTo(0, -30);
+                ctx.lineTo(30, 30);
+                ctx.lineTo(-30, 30);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(200,200,200,0.8)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
                 ctx.restore();
             }
-            getHitbox() { return { x: this.x + 10, y: this.y + 15, width: this.width - 20, height: this.height - 15 }; }
+            checkCollision(player) {
+                const px = player.x + 10;
+                const py = player.y + 10;
+                const pw = player.width - 20;
+                const ph = player.height - 20;
+                return px < this.x + this.width - 10 && px + pw > this.x + 10 &&
+                       py < this.y + this.height - 10 && py + ph > this.y + 15;
+            }
+        }
+
+        class Block {
+            constructor(x, y, width, height) { this.x = x; this.y = y; this.width = width; this.height = height; this.sawAngle = 0; }
+            draw(cameraX) {
+                const sx = this.x - cameraX;
+                if (sx < -200 || sx > canvas.width + 200) return;
+                ctx.save();
+                ctx.translate(sx + this.width / 2, this.y + this.height / 2);
+                this.sawAngle += 0.1;
+                ctx.rotate(this.sawAngle);
+                ctx.fillStyle = '#ff4444';
+                const teeth = 10;
+                ctx.beginPath();
+                for (let i = 0; i < teeth * 2; i++) {
+                    const angle = (i * Math.PI) / teeth;
+                    const r = i % 2 === 0 ? this.width / 2 : this.width / 3;
+                    const x = Math.cos(angle) * r;
+                    const y = Math.sin(angle) * r;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#880000';
+                ctx.beginPath();
+                ctx.arc(0, 0, this.width / 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            checkCollision(player) {
+                return player.x < this.x + this.width && player.x + player.width > this.x &&
+                       player.y < this.y + this.height && player.y + player.height > this.y;
+            }
+        }
+
+        class Platform {
+            constructor(x, y, toY, moveSpeed = 2) {
+                this.x = x; this.y = y; this.toY = toY; this.width = 150; this.height = 25;
+                this.moveSpeed = moveSpeed; this.moving = true;
+            }
+            update() {
+                if (this.moving) {
+                    this.y += this.moveSpeed;
+                    if (this.y > this.toY + 50 || this.y < this.toY - 50) this.moveSpeed *= -1;
+                }
+            }
+            draw(cameraX) {
+                const sx = this.x - cameraX;
+                if (sx < -200 || sx > canvas.width + 200) return;
+                ctx.fillStyle = '#667eea';
+                ctx.fillRect(sx, this.y, this.width, this.height);
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(sx, this.y, this.width, this.height);
+            }
+            checkCollision(player) {
+                return player.x + player.width > this.x && player.x < this.x + this.width &&
+                       player.y + player.height >= this.y && player.y + player.height <= this.y + 20 &&
+                       player.velocityY >= 0;
+            }
         }
 
         class Orb {
-            constructor(x, y, type) { this.x = x; this.y = y; this.radius = 25; this.type = type; }
+            constructor(x, y, type) {
+                this.x = x; this.y = y; this.radius = 30; this.type = type; this.collected = false;
+            }
             draw(cameraX) {
                 const sx = this.x - cameraX;
-                if (sx < -50 || sx > canvas.width + 50) return;
+                if (sx < -50 || sx > canvas.width + 50 || this.collected) return;
                 ctx.save();
                 ctx.translate(sx, this.y);
-                const c = { yellow: '#ff0', pink: '#f64', blue: '#09f', green: '#0f8', red: '#f44' }[this.type] || '#ff0';
+                const colors = { yellow: '#ff0', pink: '#f64', blue: '#09f', green: '#0f8', red: '#f44', black: '#333' };
+                const c = colors[this.type] || '#ff0';
                 ctx.fillStyle = c;
-                ctx.globalAlpha = 0.5;
+                ctx.globalAlpha = 0.4;
                 ctx.beginPath();
                 ctx.arc(0, 0, this.radius * 2, 0, Math.PI * 2);
                 ctx.fill();
@@ -304,17 +348,22 @@
                 ctx.restore();
             }
             checkCollision(player) {
+                if (this.collected) return false;
                 const dx = (player.x + player.width / 2) - this.x;
                 const dy = (player.y + player.height / 2) - this.y;
-                return Math.sqrt(dx * dx + dy * dy) < this.radius + 40;
+                return Math.sqrt(dx * dx + dy * dy) < this.radius + 50;
             }
             activate(player) {
+                if (this.collected) return;
+                this.collected = true;
                 audio.playOrb();
-                if (this.type === 'yellow') player.velocityY = player.jumpForce;
-                else if (this.type === 'pink') player.velocityY = player.jumpForce * 0.6;
-                else if (this.type === 'blue') { player.flipped = !player.flipped; player.velocityY = player.jumpForce * (player.flipped ? 1 : -1); }
-                else if (this.type === 'green') player.velocityY = player.jumpForce * 1.5;
-                else if (this.type === 'red') player.velocityY = player.jumpForce * 2;
+                switch (this.type) {
+                    case 'yellow': player.velocityY = player.jumpForce; break;
+                    case 'pink': player.velocityY = player.jumpForce * 0.7; break;
+                    case 'blue': player.flipped = !player.flipped; player.velocityY = player.jumpForce * (player.flipped ? 1 : -1); break;
+                    case 'green': player.velocityY = player.jumpForce * 1.3; break;
+                    case 'red': player.velocityY = player.jumpForce * 1.8; player.flipped = false; break;
+                }
             }
         }
 
@@ -322,198 +371,124 @@
             {
                 name: "Stereo Madness", difficulty: 1, bgColor1: '#1a0033', bgColor2: '#0d001a', groundColor: '#2d1b4e',
                 generate: function() {
-                    const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
+                    const e = { spikes: [], blocks: [], platforms: [], orbs: [] };
                     const gy = canvas.height - 150;
-                    let x = 800;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 350;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 350;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 350;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x + 80, gy - 50, 50, 50, 'spike'));
-                    x += 300;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    let x = 900;
+                    e.spikes.push(new Spike(x, gy)); x += 350;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 350;
+                    e.spikes.push(new Spike(x, gy)); x += 350;
+                    e.spikes.push(new Spike(x, gy)); x += 350;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'green')); x += 350;
+                    for (let i = 0; i < 2; i++) { e.spikes.push(new Spike(x, gy)); x += 280; } x += 200;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 350;
                     return e;
                 }
             },
             {
                 name: "Back On Track", difficulty: 2, bgColor1: '#0a1628', bgColor2: '#061018', groundColor: '#1a3a5c',
                 generate: function() {
-                    const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
+                    const e = { spikes: [], blocks: [], platforms: [], orbs: [] };
                     const gy = canvas.height - 150;
-                    let x = 800;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 320;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 320;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'pink'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 320;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'blue'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 320;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 320;
-                    e.obstacles.push(new Obstacle(x + 60, gy - 50, 50, 50, 'spike'));
-                    x += 250;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    let x = 900;
+                    for (let i = 0; i < 2; i++) { e.spikes.push(new Spike(x, gy)); x += 280; }
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 320;
+                    e.blocks.push(new Block(x, gy - 80, 80, 80)); x += 280;
+                    e.orbs.push(new Orb(x, gy - 80, 'blue')); x += 250;
+                    e.spikes.push(new Spike(x, gy)); x += 300;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'pink')); x += 320;
+                    e.spikes.push(new Spike(x, gy)); x += 300;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'green')); x += 320;
+                    e.spikes.push(new Spike(x, gy)); x += 300;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 320;
+                    e.spikes.push(new Spike(x, gy)); x += 280;
                     return e;
                 }
             },
             {
                 name: "Polargeist", difficulty: 3, bgColor1: '#1a0a28', bgColor2: '#0d0518', groundColor: '#3d1a5c',
                 generate: function() {
-                    const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
+                    const e = { spikes: [], blocks: [], platforms: [], orbs: [] };
                     const gy = canvas.height - 150;
-                    let x = 800;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'red'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'blue'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
-                    e.obstacles.push(new Obstacle(x + 50, gy - 50, 50, 50, 'spike'));
-                    e.obstacles.push(new Obstacle(x + 140, gy - 50, 50, 50, 'spike'));
+                    let x = 900;
+                    e.blocks.push(new Block(x, gy - 100, 80, 100)); x += 300;
+                    e.orbs.push(new Orb(x, gy - 80, 'red')); x += 250;
+                    e.spikes.push(new Spike(x, gy)); x += 300;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'blue')); x += 320;
+                    e.spikes.push(new Spike(x, gy)); x += 300;
+                    e.spikes.push(new Spike(x, 50)); x += 250;
+                    e.orbs.push(new Orb(x, 120, 'black')); x += 250;
+                    e.spikes.push(new Spike(x, gy)); x += 300;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 320;
+                    e.blocks.push(new Block(x, gy - 120, 80, 120)); x += 300;
+                    e.orbs.push(new Orb(x, gy - 80, 'green')); x += 250;
                     return e;
                 }
             },
             {
-                name: "Dry Out", difficulty: 4, bgColor1: '#281a0a', bgColor2: '#180d05', groundColor: '#5c3d1a',
+                name: "Momentum", difficulty: 4, bgColor1: '#0a2818', bgColor2: '#05180d', groundColor: '#1a5c3d',
                 generate: function() {
-                    const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
+                    const e = { spikes: [], blocks: [], platforms: [], orbs: [] };
                     const gy = canvas.height - 150;
-                    let x = 800;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 280;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 280;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'pink'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 280;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'blue'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 280;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 280;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'red'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 280;
-                    e.obstacles.push(new Obstacle(x + 70, gy - 50, 50, 50, 'spike'));
-                    e.obstacles.push(new Obstacle(x + 140, gy - 50, 50, 50, 'spike'));
+                    let x = 900;
+                    e.spikes.push(new Spike(x, gy)); x += 250;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 300;
+                    e.platforms.push(new Platform(x, gy - 200, gy - 200)); x += 300;
+                    e.orbs.push(new Orb(x, gy - 250, 'green')); x += 250;
+                    e.spikes.push(new Spike(x, gy)); x += 280;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'pink')); x += 300;
+                    e.spikes.push(new Spike(x, gy)); x += 280;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'blue')); x += 300;
+                    e.platforms.push(new Platform(x, gy - 180, gy - 180)); x += 300;
+                    e.orbs.push(new Orb(x, gy - 230, 'red')); x += 250;
                     return e;
                 }
             },
             {
-                name: "Base After Base", difficulty: 5, bgColor1: '#0a281a', bgColor2: '#05180d', groundColor: '#1a5c3d',
+                name: "Time Machine", difficulty: 5, bgColor1: '#280a1a', bgColor2: '#180505', groundColor: '#5c1a3d',
                 generate: function() {
-                    const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
+                    const e = { spikes: [], blocks: [], platforms: [], orbs: [] };
                     const gy = canvas.height - 150;
-                    let x = 800;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 260;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 260;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'pink'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 260;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'blue'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 260;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 260;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'red'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 260;
-                    e.obstacles.push(new Obstacle(x + 60, gy - 50, 50, 50, 'spike'));
-                    e.obstacles.push(new Obstacle(x + 130, gy - 50, 50, 50, 'spike'));
+                    let x = 900;
+                    e.spikes.push(new Spike(x, gy)); x += 220;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 280;
+                    e.blocks.push(new Block(x, gy - 80, 80, 80)); x += 250;
+                    e.orbs.push(new Orb(x, gy - 80, 'blue')); x += 220;
+                    e.spikes.push(new Spike(x, gy)); x += 250;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'red')); x += 280;
+                    e.spikes.push(new Spike(x, 50)); x += 220;
+                    e.orbs.push(new Orb(x, 120, 'black')); x += 220;
+                    for (let i = 0; i < 3; i++) { e.spikes.push(new Spike(x, gy)); x += 200; } x += 200;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'green')); x += 280;
                     return e;
                 }
             },
             {
-                name: "Cant Let Go", difficulty: 6, bgColor1: '#280a1a', bgColor2: '#18050d', groundColor: '#5c1a3d',
+                name: "Final Destination", difficulty: 6, bgColor1: '#0a0a1a', bgColor2: '#050505', groundColor: '#1a1a3c',
                 generate: function() {
-                    const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
+                    const e = { spikes: [], blocks: [], platforms: [], orbs: [] };
                     const gy = canvas.height - 150;
-                    let x = 800;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 250;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 250;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'pink'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 250;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'blue'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 250;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 250;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'red'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 250;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 250;
-                    e.obstacles.push(new Obstacle(x + 60, gy - 50, 50, 50, 'spike'));
-                    e.obstacles.push(new Obstacle(x + 130, gy - 50, 50, 50, 'spike'));
+                    let x = 900;
+                    e.platforms.push(new Platform(x, gy - 150, gy - 150)); x += 250;
+                    e.orbs.push(new Orb(x, gy - 200, 'yellow')); x += 250;
+                    e.spikes.push(new Spike(x, gy)); x += 220;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'pink')); x += 280;
+                    for (let i = 0; i < 2; i++) { e.spikes.push(new Spike(x, gy)); x += 200; } x += 150;
+                    e.blocks.push(new Block(x, gy - 100, 80, 100)); x += 250;
+                    e.orbs.push(new Orb(x, gy - 80, 'green')); x += 250;
+                    e.platforms.push(new Platform(x, gy - 180, gy - 100)); x += 280;
+                    e.orbs.push(new Orb(x + 50, gy - 200, 'red')); x += 250;
+                    e.spikes.push(new Spike(x, gy)); x += 220;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 280;
+                    e.spikes.push(new Spike(x, gy)); x += 220;
                     return e;
                 }
             }
         ];
 
-        let groundY = canvas.height - 150;
-        let ceilingY = 50;
-        const inputState = { holding: false, justPressed: false };
+        let groundY, ceilingY;
+        const inputState = { holding: false };
         const player = new Player();
-        let elements = { obstacles: [], orbs: [], decorations: [], platforms: [] };
+        let elements = { spikes: [], blocks: [], platforms: [], orbs: [] };
         let levelLength = 8000;
         game = { camera: { x: 0 } };
         const baseSpeed = 7;
@@ -521,29 +496,26 @@
         document.addEventListener('keydown', (e) => {
             if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) {
                 e.preventDefault();
-                if (!inputState.holding) {
-                    inputState.holding = true;
-                    if (gameState.isPlaying && !gameState.isPaused) { player.jump(); inputState.justPressed = true; }
-                }
+                if (!inputState.holding && gameState.isPlaying && !gameState.isPaused) player.jump();
+                inputState.holding = true;
             }
             if (e.code === 'Escape' && gameState.isPlaying) togglePause();
             if (e.code === 'KeyR' && gameState.isPlaying) restartLevel();
         });
         document.addEventListener('keyup', (e) => { if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) inputState.holding = false; });
-        canvas.addEventListener('mousedown', () => { inputState.holding = true; if (gameState.isPlaying && !gameState.isPaused) { player.jump(); inputState.justPressed = true; } });
+        canvas.addEventListener('mousedown', () => { if (gameState.isPlaying && !gameState.isPaused) player.jump(); inputState.holding = true; });
         canvas.addEventListener('mouseup', () => { inputState.holding = false; });
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); inputState.holding = true; if (gameState.isPlaying && !gameState.isPaused) { player.jump(); inputState.justPressed = true; } });
-        canvas.addEventListener('touchend', (e) => { e.preventDefault(); inputState.holding = false; });
 
         function showMenu() {
-            hideAll();
-            document.getElementById('menu').style.display = 'block';
-            gameState.currentScreen = 'menu';
             gameState.isPlaying = false;
+            gameState.currentScreen = 'menu';
+            ['menu', 'levelSelect', 'pauseMenu', 'deathScreen', 'winScreen'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+            document.getElementById('menu').style.display = 'block';
         }
 
         function showLevelSelect() {
-            hideAll();
+            gameState.currentScreen = 'levelSelect';
+            document.getElementById('menu').style.display = 'none';
             document.getElementById('levelSelect').style.display = 'block';
             const grid = document.getElementById('levelGrid');
             grid.innerHTML = '';
@@ -554,11 +526,7 @@
                 btn.onclick = () => startLevel(i);
                 grid.appendChild(btn);
             });
-            gameState.currentScreen = 'levelSelect';
-        }
-
-        function hideAll() {
-            ['menu', 'levelSelect', 'pauseMenu', 'deathScreen', 'winScreen'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+            audio.playClick();
         }
 
         function startLevel(idx) {
@@ -566,30 +534,21 @@
             gameState.currentLevel = idx;
             gameState.attempt = 1;
             gameState.isPlaying = true;
-            gameState.practiceMode = false;
-            document.getElementById('attemptCounter').textContent = 'Attempt 1';
-            document.getElementById('practiceMode').style.display = 'none';
-            groundY = canvas.height - 150;
-            ceilingY = 50;
-            player.y = groundY - 50;
+            audio.init();
+            audio.startMusic();
+            player.y = canvas.height - 200;
             player.reset();
             elements = levels[idx].generate();
             levelLength = 8000;
             game.camera.x = 0;
-            audio.init();
-            
-            // Play background music
-            audio.startMusic();
+            document.getElementById('attemptCounter').textContent = 'Attempt 1';
         }
 
         function restartLevel() {
             hideAll();
             gameState.attempt++;
-            gameState.stats.totalAttempts++;
             document.getElementById('attemptCounter').textContent = 'Attempt ' + gameState.attempt;
-            groundY = canvas.height - 150;
-            ceilingY = 50;
-            player.y = groundY - 50;
+            player.y = canvas.height - 200;
             player.reset();
             elements = levels[gameState.currentLevel].generate();
             game.camera.x = 0;
@@ -597,16 +556,15 @@
             gameState.isPaused = false;
         }
 
+        function hideAll() { ['menu', 'levelSelect', 'pauseMenu', 'deathScreen', 'winScreen'].forEach(id => { document.getElementById(id).style.display = 'none'; }); }
+
         function togglePause() {
             if (!gameState.isPlaying) return;
             gameState.isPaused = !gameState.isPaused;
             document.getElementById('pauseMenu').style.display = gameState.isPaused ? 'flex' : 'none';
         }
 
-        function resumeGame() {
-            gameState.isPaused = false;
-            document.getElementById('pauseMenu').style.display = 'none';
-        }
+        function resumeGame() { gameState.isPaused = false; document.getElementById('pauseMenu').style.display = 'none'; }
 
         function showDeathScreen() {
             const pct = Math.floor((player.x / levelLength) * 100);
@@ -615,22 +573,15 @@
         }
 
         function showWinScreen() {
-            gameState.stats.levelsCompleted++;
+            gameState.stats = { completed: (gameState.stats.completed || 0) + 1 };
             audio.playWin();
             document.getElementById('winStats').textContent = 'Attempts: ' + gameState.attempt + ' | Jumps: ' + gameState.stats.totalJumps;
             document.getElementById('winScreen').style.display = 'flex';
         }
 
-        function nextLevel() {
-            if (gameState.currentLevel < levels.length - 1) startLevel(gameState.currentLevel + 1);
-            else showMenu();
-        }
+        function nextLevel() { startLevel((gameState.currentLevel + 1) % levels.length); }
 
-        function exitToMenu() { 
-            gameState.isPlaying = false; 
-            audio.musicEnabled = false;
-            showMenu(); 
-        }
+        function exitToMenu() { showMenu(); }
 
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -642,17 +593,24 @@
                 game.camera.x = player.x - 150;
                 player.update(groundY, ceilingY);
                 
-                elements.orbs.forEach(o => { if (o.checkCollision(player) && inputState.holding) o.activate(player); });
-                elements.obstacles.forEach(o => {
-                    if (player.x + player.width > o.x && player.x < o.x + o.width && player.y + player.height > o.y && player.y < o.y + o.height) player.die();
+                elements.platforms.forEach(p => p.update());
+                elements.platforms.forEach(p => {
+                    if (p.checkCollision(player)) {
+                        player.y = p.y - player.height;
+                        player.velocityY = 0;
+                        player.grounded = true;
+                    }
                 });
+                
+                elements.orbs.forEach(o => { if (o.checkCollision(player) && inputState.holding) o.activate(player); });
+                elements.spikes.forEach(s => { if (s.checkCollision(player)) player.die(); });
+                elements.blocks.forEach(b => { if (b.checkCollision(player)) player.die(); });
                 
                 document.getElementById('progressFill').style.width = Math.min(100, Math.floor(player.x / levelLength * 100)) + '%';
                 document.getElementById('percentDisplay').textContent = Math.floor(player.x / levelLength * 100) + '%';
                 
                 if (player.y > canvas.height + 100 || player.y < -100) player.die();
                 if (player.x >= levelLength - 100) showWinScreen();
-                inputState.justPressed = false;
             }
             
             const lvl = levels[gameState.currentLevel] || levels[0];
@@ -672,16 +630,10 @@
             ctx.stroke();
             
             elements.orbs.forEach(o => o.draw(game.camera.x));
-            elements.obstacles.forEach(o => o.draw(game.camera.x));
+            elements.platforms.forEach(p => p.draw(game.camera.x));
+            elements.spikes.forEach(s => s.draw(game.camera.x));
+            elements.blocks.forEach(b => b.draw(game.camera.x));
             player.draw();
-            
-            ctx.fillStyle = 'rgba(255,255,255,0.1)';
-            for (let x = -game.camera.x % 50; x < canvas.width; x += 50) {
-                ctx.beginPath();
-                ctx.moveTo(x, groundY - 100);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
             
             requestAnimationFrame(gameLoop);
         }
