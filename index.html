@@ -358,6 +358,8 @@
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            groundY = canvas.height - 150;
+            ceilingY = 50;
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
@@ -421,7 +423,7 @@
             constructor() { this.reset(); }
             reset() {
                 this.x = 150;
-                this.y = canvas.height - 200;
+                this.y = 0;
                 this.width = 50;
                 this.height = 50;
                 this.velocityY = 0;
@@ -433,6 +435,7 @@
                 this.dead = false;
                 this.flipped = false;
                 this.trail = [];
+                if (groundY) this.y = groundY - 50;
             }
             update(ground, ceiling) {
                 if (this.dead) return;
@@ -812,14 +815,19 @@
             }
         ];
 
+        let groundY, ceilingY;
+        
+        function initGame() {
+            groundY = canvas.height - 150;
+            ceilingY = 50;
+        }
+        
         const inputState = { holding: false, justPressed: false };
         const player = new Player();
         let elements = { obstacles: [], orbs: [], decorations: [], platforms: [] };
         let levelLength = 8000;
         let camera = { x: 0 };
         const baseSpeed = 7;
-        const groundY = canvas.height - 150;
-        const ceilingY = 50;
 
         document.addEventListener('keydown', (e) => {
             if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) {
@@ -983,6 +991,7 @@
         }
 
         showMenu();
+        initGame();
         requestAnimationFrame(gameLoop);
     </script>
 </body>
