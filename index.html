@@ -2305,6 +2305,8 @@
                 this.elements = level.generate();
                 this.player.reset();
                 this.camera.x = 0;
+                this.player.x = 150;
+                this.camera.x = 0;
                 this.gameSpeed = 1;
                 gameState.checkpoint = null;
             }
@@ -2312,8 +2314,11 @@
             update() {
                 if (!gameState.isPlaying || gameState.isPaused) return;
 
-                // Update camera
-                this.camera.x += this.baseSpeed * this.gameSpeed;
+                // Move player forward
+                this.player.x += this.baseSpeed * this.gameSpeed;
+                
+                // Camera follows player
+                this.camera.x = this.player.x - 150;
 
                 // Update player
                 const effectiveGround = this.getGroundAt(this.player.x);
@@ -2340,21 +2345,21 @@
 
                 this.elements.orbs.forEach(orb => {
                     orb.update();
-                    if (orb.checkCollision(this.player, this.camera.x) && inputState.justPressed) {
+                    if (orb.checkCollision(this.player, this.player.x) && inputState.justPressed) {
                         orb.activate(this.player);
                     }
                 });
 
                 this.elements.portals.forEach(portal => {
                     portal.update();
-                    if (portal.checkCollision(this.player, this.camera.x)) {
+                    if (portal.checkCollision(this.player, this.player.x)) {
                         portal.activate(this.player);
                     }
                 });
 
                 this.elements.pads.forEach(pad => {
                     pad.update();
-                    if (pad.checkCollision(this.player, this.camera.x)) {
+                    if (pad.checkCollision(this.player, this.player.x)) {
                         pad.activate(this.player);
                     }
                 });
@@ -2367,12 +2372,12 @@
                 }
 
                 // Update progress
-                const progress = Math.min(100, Math.floor((this.camera.x / this.levelLength) * 100));
+                const progress = Math.min(100, Math.floor((this.player.x / this.levelLength) * 100));
                 document.getElementById('progressFill').style.width = progress + '%';
                 document.getElementById('percentDisplay').textContent = progress + '%';
 
                 // Check win
-                if (this.camera.x >= this.levelLength) {
+                if (this.player.x >= this.levelLength) {
                     this.win();
                 }
 
@@ -2398,7 +2403,7 @@
                 // Practice mode checkpoint
                 if (gameState.practiceMode && inputState.justPressed && !this.player.dead) {
                     gameState.checkpoint = {
-                        x: this.camera.x,
+                        x: this.player.x,
                         y: this.player.y,
                         mode: this.player.mode,
                         flipped: this.player.flipped,
@@ -2827,6 +2832,7 @@
 
         function respawnAtCheckpoint() {
             if (gameState.checkpoint) {
+                game.player.x = gameState.checkpoint.x + 150;
                 game.camera.x = gameState.checkpoint.x;
                 game.player.reset();
                 game.player.y = gameState.checkpoint.y;
@@ -2854,7 +2860,7 @@
         }
 
         function showDeathScreen() {
-            const progress = Math.floor((game.camera.x / game.levelLength) * 100);
+            const progress = Math.floor((game.player.x / game.levelLength) * 100);
             document.getElementById('deathPercent').textContent = `Progress: ${progress}%`;
             document.getElementById('deathScreen').style.display = 'flex';
         }
