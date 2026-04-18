@@ -5,309 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geometry Dash Clone</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #0a0a0a;
-            overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        #gameContainer {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        #gameCanvas {
-            display: block;
-            background: linear-gradient(180deg, #1a0033 0%, #0d001a 100%);
-        }
-
-        #ui {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        #ui > * {
-            pointer-events: auto;
-        }
-
-        #progressBar {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 300px;
-            height: 8px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        #progressFill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff88, #00ffcc);
-            width: 0%;
-            transition: width 0.1s linear;
-            box-shadow: 0 0 10px #00ff88;
-        }
-
-        #attemptCounter {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            color: white;
-            font-size: 18px;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-
-        #percentDisplay {
-            position: absolute;
-            top: 35px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 14px;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-
-        #menu {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 100;
-        }
-
-        #menu h1 {
-            font-size: 72px;
-            color: #fff;
-            text-shadow: 0 0 30px #00ffcc, 0 0 60px #00ff88;
-            margin-bottom: 20px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        #menu p {
-            color: rgba(255,255,255,0.7);
-            font-size: 18px;
-            margin-bottom: 40px;
-        }
-
-        .menuBtn {
-            display: block;
-            width: 250px;
-            margin: 15px auto;
-            padding: 18px 40px;
-            font-size: 20px;
-            font-weight: bold;
-            color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-        }
-
-        .menuBtn:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
-        }
-
-        .menuBtn.play {
-            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
-            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
-        }
-
-        .menuBtn.play:hover {
-            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.6);
-        }
-
-        #levelSelect {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 100;
-        }
-
-        #levelSelect h2 {
-            color: white;
-            font-size: 48px;
-            margin-bottom: 40px;
-            text-shadow: 0 0 20px rgba(255,255,255,0.5);
-        }
-
-        .levelGrid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            max-width: 600px;
-        }
-
-        .levelBtn {
-            width: 150px;
-            height: 150px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 20px;
-            background: rgba(255,255,255,0.1);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-
-        .levelBtn:hover {
-            background: rgba(255,255,255,0.2);
-            transform: scale(1.1);
-            border-color: #00ff88;
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
-        }
-
-        .levelBtn .levelNum {
-            font-size: 48px;
-            font-weight: bold;
-        }
-
-        .levelBtn .levelName {
-            font-size: 12px;
-            opacity: 0.7;
-            margin-top: 5px;
-        }
-
-        .levelBtn .difficulty {
-            display: flex;
-            gap: 3px;
-            margin-top: 10px;
-        }
-
-        .levelBtn .difficulty span {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #444;
-        }
-
-        .levelBtn .difficulty span.active {
-            background: #ff6b6b;
-            box-shadow: 0 0 5px #ff6b6b;
-        }
-
-        #pauseMenu, #deathScreen, #winScreen {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 200;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        #pauseMenu h2, #deathScreen h2, #winScreen h2 {
-            color: white;
-            font-size: 56px;
-            margin-bottom: 20px;
-            text-shadow: 0 0 30px rgba(255,255,255,0.5);
-        }
-
-        #deathScreen h2 {
-            color: #ff4444;
-            text-shadow: 0 0 30px rgba(255, 68, 68, 0.8);
-        }
-
-        #winScreen h2 {
-            color: #00ff88;
-            text-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
-        }
-
-        #deathScreen p, #winScreen p {
-            color: rgba(255,255,255,0.7);
-            font-size: 24px;
-            margin-bottom: 40px;
-        }
-
-        .backBtn {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .backBtn:hover {
-            background: rgba(255,255,255,0.2);
-            border-color: white;
-        }
-
-        #practiceMode {
-            position: absolute;
-            top: 60px;
-            left: 30px;
-            color: #ffcc00;
-            font-size: 16px;
-            display: none;
-        }
-
-        #checkpoint {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #00ff88;
-            font-size: 32px;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.3s;
-            text-shadow: 0 0 20px #00ff88;
-            pointer-events: none;
-        }
-
-        #modeIndicator {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            color: rgba(255,255,255,0.5);
-            font-size: 14px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0a; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #gameContainer { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #gameCanvas { display: block; background: linear-gradient(180deg, #1a0033 0%, #0d001a 100%); }
+        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        #ui > * { pointer-events: auto; }
+        #progressBar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 300px; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; }
+        #progressFill { height: 100%; background: linear-gradient(90deg, #00ff88, #00ffcc); width: 0%; transition: width 0.1s linear; box-shadow: 0 0 10px #00ff88; }
+        #attemptCounter { position: absolute; top: 20px; right: 30px; color: white; font-size: 18px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        #percentDisplay { position: absolute; top: 35px; left: 50%; transform: translateX(-50%); color: white; font-size: 14px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        #menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 100; }
+        #menu h1 { font-size: 72px; color: #fff; text-shadow: 0 0 30px #00ffcc, 0 0 60px #00ff88; margin-bottom: 20px; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        #menu p { color: rgba(255,255,255,0.7); font-size: 18px; margin-bottom: 40px; }
+        .menuBtn { display: block; width: 250px; margin: 15px auto; padding: 18px 40px; font-size: 20px; font-weight: bold; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
+        .menuBtn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6); }
+        .menuBtn.play { background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%); box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4); }
+        .menuBtn.play:hover { box-shadow: 0 15px 40px rgba(0, 255, 136, 0.6); }
+        #levelSelect { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 100; }
+        #levelSelect h2 { color: white; font-size: 48px; margin-bottom: 40px; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
+        .levelGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 600px; }
+        .levelBtn { width: 150px; height: 150px; border: 3px solid rgba(255,255,255,0.3); border-radius: 20px; background: rgba(255,255,255,0.1); cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .levelBtn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); border-color: #00ff88; box-shadow: 0 0 30px rgba(0, 255, 136, 0.5); }
+        .levelBtn .levelNum { font-size: 48px; font-weight: bold; }
+        .levelBtn .levelName { font-size: 12px; opacity: 0.7; margin-top: 5px; }
+        .levelBtn .difficulty { display: flex; gap: 3px; margin-top: 10px; }
+        .levelBtn .difficulty span { width: 8px; height: 8px; border-radius: 50%; background: #444; }
+        .levelBtn .difficulty span.active { background: #ff6b6b; box-shadow: 0 0 5px #ff6b6b; }
+        #pauseMenu, #deathScreen, #winScreen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; flex-direction: column; }
+        #pauseMenu h2, #deathScreen h2, #winScreen h2 { color: white; font-size: 56px; margin-bottom: 20px; text-shadow: 0 0 30px rgba(255,255,255,0.5); }
+        #deathScreen h2 { color: #ff4444; text-shadow: 0 0 30px rgba(255, 68, 68, 0.8); }
+        #winScreen h2 { color: #00ff88; text-shadow: 0 0 30px rgba(0, 255, 136, 0.8); }
+        #deathScreen p, #winScreen p { color: rgba(255,255,255,0.7); font-size: 24px; margin-bottom: 40px; }
+        .backBtn { position: absolute; top: 30px; left: 30px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: white; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+        .backBtn:hover { background: rgba(255,255,255,0.2); border-color: white; }
+        #practiceMode { position: absolute; top: 60px; left: 30px; color: #ffcc00; font-size: 16px; display: none; }
+        #checkpoint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #00ff88; font-size: 32px; font-weight: bold; opacity: 0; transition: opacity 0.3s; text-shadow: 0 0 20px #00ff88; pointer-events: none; }
+        #modeIndicator { position: absolute; bottom: 30px; left: 30px; color: rgba(255,255,255,0.5); font-size: 14px; }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
-        
         <div id="ui">
             <div id="progressBar"><div id="progressFill"></div></div>
             <div id="percentDisplay">0%</div>
@@ -316,33 +56,28 @@
             <div id="checkpoint">CHECKPOINT</div>
             <div id="modeIndicator"></div>
         </div>
-
         <div id="menu">
             <h1>GEOMETRY DASH</h1>
             <p>Click or press SPACE to jump</p>
             <button class="menuBtn play" onclick="showLevelSelect()">PLAY</button>
         </div>
-
         <div id="levelSelect">
             <button class="backBtn" onclick="showMenu()">Back</button>
             <h2>SELECT LEVEL</h2>
             <div class="levelGrid" id="levelGrid"></div>
         </div>
-
         <div id="pauseMenu">
             <h2>PAUSED</h2>
             <button class="menuBtn" onclick="resumeGame()">RESUME</button>
             <button class="menuBtn" onclick="restartLevel()">RESTART</button>
             <button class="menuBtn" onclick="exitToMenu()">EXIT</button>
         </div>
-
         <div id="deathScreen">
             <h2>CRASHED!</h2>
             <p id="deathPercent">Progress: 0%</p>
             <button class="menuBtn play" onclick="restartLevel()">RETRY</button>
             <button class="menuBtn" onclick="exitToMenu()">EXIT</button>
         </div>
-
         <div id="winScreen">
             <h2>LEVEL COMPLETE!</h2>
             <p id="winStats">Attempts: 1 | Jumps: 0</p>
@@ -350,28 +85,20 @@
             <button class="menuBtn" onclick="exitToMenu()">EXIT</button>
         </div>
     </div>
-
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
+        
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            groundY = canvas.height - 150;
-            ceilingY = 50;
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
         class AudioSystem {
-            constructor() {
-                this.audioContext = null;
-                this.sfxEnabled = true;
-            }
-            init() {
-                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            constructor() { this.audioContext = null; this.sfxEnabled = true; }
+            init() { this.audioContext = new (window.AudioContext || window.webkitAudioContext)(); }
             createOscillator(freq, type, duration, volume = 0.3) {
                 if (!this.sfxEnabled || !this.audioContext) return;
                 const osc = this.audioContext.createOscillator();
@@ -385,45 +112,23 @@
                 osc.start();
                 osc.stop(this.audioContext.currentTime + duration);
             }
-            playJump() {
-                this.createOscillator(400, 'square', 0.1, 0.2);
-                setTimeout(() => this.createOscillator(600, 'square', 0.1, 0.15), 50);
-            }
-            playDeath() {
-                this.createOscillator(200, 'sawtooth', 0.3, 0.3);
-                setTimeout(() => this.createOscillator(150, 'sawtooth', 0.3, 0.25), 100);
-            }
-            playOrb() {
-                this.createOscillator(800, 'sine', 0.15, 0.25);
-                this.createOscillator(1200, 'sine', 0.1, 0.2);
-            }
-            playWin() {
-                [523, 659, 784, 1047].forEach((n, i) => {
-                    setTimeout(() => this.createOscillator(n, 'square', 0.3, 0.2), i * 150);
-                });
-            }
+            playJump() { this.createOscillator(400, 'square', 0.1, 0.2); setTimeout(() => this.createOscillator(600, 'square', 0.1, 0.15), 50); }
+            playDeath() { this.createOscillator(200, 'sawtooth', 0.3, 0.3); setTimeout(() => this.createOscillator(150, 'sawtooth', 0.3, 0.25), 100); }
+            playOrb() { this.createOscillator(800, 'sine', 0.15, 0.25); this.createOscillator(1200, 'sine', 0.1, 0.2); }
+            playWin() { [523, 659, 784, 1047].forEach((n, i) => { setTimeout(() => this.createOscillator(n, 'square', 0.3, 0.2), i * 150); }); }
         }
 
         const audio = new AudioSystem();
 
-        const gameState = {
-            currentScreen: 'menu',
-            currentLevel: 0,
-            attempt: 1,
-            isPaused: false,
-            isPlaying: false,
-            practiceMode: false,
-            checkpoint: null,
-            stats: { totalAttempts: 0, totalJumps: 0, levelsCompleted: 0 }
-        };
-
+        const gameState = { currentScreen: 'menu', currentLevel: 0, attempt: 1, isPaused: false, isPlaying: false, practiceMode: false, checkpoint: null, stats: { totalAttempts: 0, totalJumps: 0, levelsCompleted: 0 } };
+        
         const MODES = { CUBE: 'cube', SHIP: 'ship', BALL: 'ball', UFO: 'ufo', WAVE: 'wave', ROBOT: 'robot', SPIDER: 'spider' };
 
         class Player {
             constructor() { this.reset(); }
             reset() {
                 this.x = 150;
-                this.y = 0;
+                this.y = canvas.height - 200;
                 this.width = 50;
                 this.height = 50;
                 this.velocityY = 0;
@@ -435,7 +140,6 @@
                 this.dead = false;
                 this.flipped = false;
                 this.trail = [];
-                if (groundY) this.y = groundY - 50;
             }
             update(ground, ceiling) {
                 if (this.dead) return;
@@ -516,11 +220,7 @@
 
         class Obstacle {
             constructor(x, y, width, height, type = 'spike') {
-                this.x = x;
-                this.y = y;
-                this.width = width;
-                this.height = height;
-                this.type = type;
+                this.x = x; this.y = y; this.width = width; this.height = height; this.type = type;
             }
             draw(cameraX) {
                 const sx = this.x - cameraX;
@@ -541,18 +241,11 @@
                 }
                 ctx.restore();
             }
-            getHitbox() {
-                return { x: this.x + 10, y: this.y + 15, width: this.width - 20, height: this.height - 15 };
-            }
+            getHitbox() { return { x: this.x + 10, y: this.y + 15, width: this.width - 20, height: this.height - 15 }; }
         }
 
         class Orb {
-            constructor(x, y, type) {
-                this.x = x;
-                this.y = y;
-                this.radius = 25;
-                this.type = type;
-            }
+            constructor(x, y, type) { this.x = x; this.y = y; this.radius = 25; this.type = type; }
             draw(cameraX) {
                 const sx = this.x - cameraX;
                 if (sx < -50 || sx > canvas.width + 50) return;
@@ -592,241 +285,202 @@
 
         const levels = [
             {
-                name: "Stereo Madness",
-                difficulty: 1,
-                bgColor1: '#1a0033',
-                bgColor2: '#0d001a',
-                groundColor: '#2d1b4e',
+                name: "Stereo Madness", difficulty: 1, bgColor1: '#1a0033', bgColor2: '#0d001a', groundColor: '#2d1b4e',
                 generate: function() {
                     const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
                     const gy = canvas.height - 150;
                     let x = 800;
                     e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
                     x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 350;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 400;
-                    e.orbs.push(new Orb(x + 150, gy - 60, 'yellow'));
-                    x += 450;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
                     x += 350;
                     e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
                     x += 350;
-                    e.orbs.push(new Orb(x + 150, gy - 60, 'green'));
-                    x += 450;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
                     x += 350;
                     e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
                     x += 350;
-                    e.orbs.push(new Orb(x + 150, gy - 60, 'yellow'));
-                    x += 450;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
                     x += 350;
                     e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
                     x += 350;
-                    e.obstacles.push(new Obstacle(x + 100, gy - 50, 50, 50, 'spike'));
+                    e.obstacles.push(new Obstacle(x + 80, gy - 50, 50, 50, 'spike'));
+                    x += 300;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
                     return e;
                 }
             },
             {
-                name: "Back On Track",
-                difficulty: 2,
-                bgColor1: '#0a1628',
-                bgColor2: '#061018',
-                groundColor: '#1a3a5c',
+                name: "Back On Track", difficulty: 2, bgColor1: '#0a1628', bgColor2: '#061018', groundColor: '#1a3a5c',
                 generate: function() {
                     const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
                     const gy = canvas.height - 150;
                     let x = 800;
-                    for (let i = 0; i < 3; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 300; }
-                    x += 200;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 320;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
                     x += 350;
                     e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
+                    x += 320;
+                    e.orbs.push(new Orb(x + 100, gy - 60, 'pink'));
+                    x += 350;
                     e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
-                    e.orbs.push(new Orb(x + 150, gy - 60, 'pink'));
-                    x += 450;
+                    x += 320;
+                    e.orbs.push(new Orb(x + 100, gy - 60, 'blue'));
+                    x += 350;
                     e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
+                    x += 320;
+                    e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
+                    x += 350;
                     e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
-                    e.orbs.push(new Orb(x + 150, gy - 60, 'blue'));
-                    x += 450;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
-                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
-                    x += 300;
-                    e.obstacles.push(new Obstacle(x + 80, gy - 50, 50, 50, 'spike'));
+                    x += 320;
+                    e.obstacles.push(new Obstacle(x + 60, gy - 50, 50, 50, 'spike'));
                     x += 250;
-                    e.obstacles.push(new Obstacle(x + 80, gy - 50, 50, 50, 'spike'));
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
                     return e;
                 }
             },
             {
-                name: "Polargeist",
-                difficulty: 3,
-                bgColor1: '#1a0a28',
-                bgColor2: '#0d0518',
-                groundColor: '#3d1a5c',
+                name: "Polargeist", difficulty: 3, bgColor1: '#1a0a28', bgColor2: '#0d0518', groundColor: '#3d1a5c',
                 generate: function() {
                     const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
                     const gy = canvas.height - 150;
                     let x = 800;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 300; }
-                    x += 200;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 300;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 300; }
-                    x += 200;
-                    e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
-                    x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 300; }
-                    x += 200;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 300;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'red'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 300; }
-                    x += 200;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 300;
+                    e.orbs.push(new Orb(x + 100, gy - 60, 'blue'));
+                    x += 350;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 300;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 300; }
-                    x += 200;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 300;
                     e.obstacles.push(new Obstacle(x + 50, gy - 50, 50, 50, 'spike'));
-                    e.obstacles.push(new Obstacle(x + 150, gy - 50, 50, 50, 'spike'));
+                    e.obstacles.push(new Obstacle(x + 140, gy - 50, 50, 50, 'spike'));
                     return e;
                 }
             },
             {
-                name: "Dry Out",
-                difficulty: 4,
-                bgColor1: '#281a0a',
-                bgColor2: '#180d05',
-                groundColor: '#5c3d1a',
+                name: "Dry Out", difficulty: 4, bgColor1: '#281a0a', bgColor2: '#180d05', groundColor: '#5c3d1a',
                 generate: function() {
                     const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
                     const gy = canvas.height - 150;
                     let x = 800;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 280; }
-                    x += 180;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 280;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 280; }
-                    x += 180;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 280;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'pink'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 280; }
-                    x += 180;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 280;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'blue'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 280; }
-                    x += 180;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 280;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 280; }
-                    x += 180;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 280;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'red'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 280; }
-                    x += 180;
-                    e.obstacles.push(new Obstacle(x + 80, gy - 50, 50, 50, 'spike'));
-                    e.obstacles.push(new Obstacle(x + 160, gy - 50, 50, 50, 'spike'));
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 280;
+                    e.obstacles.push(new Obstacle(x + 70, gy - 50, 50, 50, 'spike'));
+                    e.obstacles.push(new Obstacle(x + 140, gy - 50, 50, 50, 'spike'));
                     return e;
                 }
             },
             {
-                name: "Base After Base",
-                difficulty: 5,
-                bgColor1: '#0a281a',
-                bgColor2: '#05180d',
-                groundColor: '#1a5c3d',
+                name: "Base After Base", difficulty: 5, bgColor1: '#0a281a', bgColor2: '#05180d', groundColor: '#1a5c3d',
                 generate: function() {
                     const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
                     const gy = canvas.height - 150;
                     let x = 800;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 260; }
-                    x += 160;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 260;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 260; }
-                    x += 160;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 260;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'pink'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 260; }
-                    x += 160;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 260;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'blue'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 260; }
-                    x += 160;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 260;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 260; }
-                    x += 160;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 260;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'red'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 260; }
-                    x += 160;
-                    e.obstacles.push(new Obstacle(x + 80, gy - 50, 50, 50, 'spike'));
-                    e.obstacles.push(new Obstacle(x + 160, gy - 50, 50, 50, 'spike'));
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 260;
+                    e.obstacles.push(new Obstacle(x + 60, gy - 50, 50, 50, 'spike'));
+                    e.obstacles.push(new Obstacle(x + 130, gy - 50, 50, 50, 'spike'));
                     return e;
                 }
             },
             {
-                name: "Cant Let Go",
-                difficulty: 6,
-                bgColor1: '#280a1a',
-                bgColor2: '#18050d',
-                groundColor: '#5c1a3d',
+                name: "Cant Let Go", difficulty: 6, bgColor1: '#280a1a', bgColor2: '#18050d', groundColor: '#5c1a3d',
                 generate: function() {
                     const e = { obstacles: [], orbs: [], decorations: [], platforms: [] };
                     const gy = canvas.height - 150;
                     let x = 800;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 250; }
-                    x += 150;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 250;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 250; }
-                    x += 150;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 250;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'pink'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 250; }
-                    x += 150;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 250;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'blue'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 250; }
-                    x += 150;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 250;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'green'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 250; }
-                    x += 150;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 250;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'red'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 250; }
-                    x += 150;
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 250;
                     e.orbs.push(new Orb(x + 100, gy - 60, 'yellow'));
                     x += 350;
-                    for (let i = 0; i < 2; i++) { e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike')); x += 250; }
-                    x += 150;
-                    e.obstacles.push(new Obstacle(x + 80, gy - 50, 50, 50, 'spike'));
-                    e.obstacles.push(new Obstacle(x + 160, gy - 50, 50, 50, 'spike'));
+                    e.obstacles.push(new Obstacle(x, gy - 50, 50, 50, 'spike'));
+                    x += 250;
+                    e.obstacles.push(new Obstacle(x + 60, gy - 50, 50, 50, 'spike'));
+                    e.obstacles.push(new Obstacle(x + 130, gy - 50, 50, 50, 'spike'));
                     return e;
                 }
             }
         ];
 
-        let groundY, ceilingY;
-        
-        function initGame() {
-            groundY = canvas.height - 150;
-            ceilingY = 50;
-        }
-        
+        let groundY = canvas.height - 150;
+        let ceilingY = 50;
         const inputState = { holding: false, justPressed: false };
         const player = new Player();
         let elements = { obstacles: [], orbs: [], decorations: [], platforms: [] };
         let levelLength = 8000;
-        let camera = { x: 0 };
+        game = { camera: { x: 0 } };
         const baseSpeed = 7;
 
         document.addEventListener('keydown', (e) => {
@@ -834,31 +488,16 @@
                 e.preventDefault();
                 if (!inputState.holding) {
                     inputState.holding = true;
-                    if (gameState.isPlaying && !gameState.isPaused) {
-                        player.jump();
-                        inputState.justPressed = true;
-                    }
+                    if (gameState.isPlaying && !gameState.isPaused) { player.jump(); inputState.justPressed = true; }
                 }
             }
             if (e.code === 'Escape' && gameState.isPlaying) togglePause();
             if (e.code === 'KeyR' && gameState.isPlaying) restartLevel();
         });
-
-        document.addEventListener('keyup', (e) => {
-            if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) inputState.holding = false;
-        });
-
-        canvas.addEventListener('mousedown', () => {
-            inputState.holding = true;
-            if (gameState.isPlaying && !gameState.isPaused) { player.jump(); inputState.justPressed = true; }
-        });
+        document.addEventListener('keyup', (e) => { if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) inputState.holding = false; });
+        canvas.addEventListener('mousedown', () => { inputState.holding = true; if (gameState.isPlaying && !gameState.isPaused) { player.jump(); inputState.justPressed = true; } });
         canvas.addEventListener('mouseup', () => { inputState.holding = false; });
-
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            inputState.holding = true;
-            if (gameState.isPlaying && !gameState.isPaused) { player.jump(); inputState.justPressed = true; }
-        });
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); inputState.holding = true; if (gameState.isPlaying && !gameState.isPaused) { player.jump(); inputState.justPressed = true; } });
         canvas.addEventListener('touchend', (e) => { e.preventDefault(); inputState.holding = false; });
 
         function showMenu() {
@@ -876,7 +515,7 @@
             levels.forEach((l, i) => {
                 const btn = document.createElement('div');
                 btn.className = 'levelBtn';
-                btn.innerHTML = `<div class="levelNum">${i + 1}</div><div class="levelName">${l.name}</div><div class="difficulty">${Array(5).fill(0).map((_, j) => `<span class="${j < l.difficulty ? 'active' : ''}"></span>`).join('')}</div>`;
+                btn.innerHTML = '<div class="levelNum">' + (i + 1) + '</div><div class="levelName">' + l.name + '</div><div class="difficulty">' + Array(5).fill(0).map((_, j) => '<span class="' + (j < l.difficulty ? 'active' : '') + '"></span>').join('') + '</div>';
                 btn.onclick = () => startLevel(i);
                 grid.appendChild(btn);
             });
@@ -884,9 +523,7 @@
         }
 
         function hideAll() {
-            ['menu', 'levelSelect', 'pauseMenu', 'deathScreen', 'winScreen'].forEach(id => {
-                document.getElementById(id).style.display = 'none';
-            });
+            ['menu', 'levelSelect', 'pauseMenu', 'deathScreen', 'winScreen'].forEach(id => { document.getElementById(id).style.display = 'none'; });
         }
 
         function startLevel(idx) {
@@ -897,10 +534,13 @@
             gameState.practiceMode = false;
             document.getElementById('attemptCounter').textContent = 'Attempt 1';
             document.getElementById('practiceMode').style.display = 'none';
+            groundY = canvas.height - 150;
+            ceilingY = 50;
+            player.y = groundY - 50;
             player.reset();
             elements = levels[idx].generate();
             levelLength = 8000;
-            camera.x = 0;
+            game.camera.x = 0;
             audio.init();
         }
 
@@ -908,10 +548,13 @@
             hideAll();
             gameState.attempt++;
             gameState.stats.totalAttempts++;
-            document.getElementById('attemptCounter').textContent = `Attempt ${gameState.attempt}`;
+            document.getElementById('attemptCounter').textContent = 'Attempt ' + gameState.attempt;
+            groundY = canvas.height - 150;
+            ceilingY = 50;
+            player.y = groundY - 50;
             player.reset();
             elements = levels[gameState.currentLevel].generate();
-            camera.x = 0;
+            game.camera.x = 0;
             gameState.isPlaying = true;
             gameState.isPaused = false;
         }
@@ -929,14 +572,14 @@
 
         function showDeathScreen() {
             const pct = Math.floor((player.x / levelLength) * 100);
-            document.getElementById('deathPercent').textContent = `Progress: ${pct}%`;
+            document.getElementById('deathPercent').textContent = 'Progress: ' + pct + '%';
             document.getElementById('deathScreen').style.display = 'flex';
         }
 
         function showWinScreen() {
             gameState.stats.levelsCompleted++;
             audio.playWin();
-            document.getElementById('winStats').textContent = `Attempts: ${gameState.attempt} | Jumps: ${gameState.stats.totalJumps}`;
+            document.getElementById('winStats').textContent = 'Attempts: ' + gameState.attempt + ' | Jumps: ' + gameState.stats.totalJumps;
             document.getElementById('winScreen').style.display = 'flex';
         }
 
@@ -949,26 +592,34 @@
 
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            groundY = canvas.height - 150;
+            ceilingY = 50;
+            
             if (gameState.isPlaying && !gameState.isPaused) {
                 player.x += baseSpeed;
-                camera.x = player.x - 150;
+                game.camera.x = player.x - 150;
                 player.update(groundY, ceilingY);
+                
                 elements.orbs.forEach(o => { if (o.checkCollision(player) && inputState.holding) o.activate(player); });
                 elements.obstacles.forEach(o => {
                     if (player.x + player.width > o.x && player.x < o.x + o.width && player.y + player.height > o.y && player.y < o.y + o.height) player.die();
                 });
+                
                 document.getElementById('progressFill').style.width = Math.min(100, Math.floor(player.x / levelLength * 100)) + '%';
                 document.getElementById('percentDisplay').textContent = Math.floor(player.x / levelLength * 100) + '%';
+                
                 if (player.y > canvas.height + 100 || player.y < -100) player.die();
                 if (player.x >= levelLength - 100) showWinScreen();
                 inputState.justPressed = false;
             }
+            
             const lvl = levels[gameState.currentLevel] || levels[0];
             const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
             grad.addColorStop(0, lvl.bgColor1);
             grad.addColorStop(1, lvl.bgColor2);
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
             ctx.fillStyle = lvl.groundColor;
             ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
             ctx.strokeStyle = 'rgba(255,255,255,0.5)';
@@ -977,21 +628,23 @@
             ctx.moveTo(0, groundY);
             ctx.lineTo(canvas.width, groundY);
             ctx.stroke();
-            elements.orbs.forEach(o => o.draw(camera.x));
-            elements.obstacles.forEach(o => o.draw(camera.x));
+            
+            elements.orbs.forEach(o => o.draw(game.camera.x));
+            elements.obstacles.forEach(o => o.draw(game.camera.x));
             player.draw();
+            
             ctx.fillStyle = 'rgba(255,255,255,0.1)';
-            for (let x = -camera.x % 50; x < canvas.width; x += 50) {
+            for (let x = -game.camera.x % 50; x < canvas.width; x += 50) {
                 ctx.beginPath();
                 ctx.moveTo(x, groundY - 100);
                 ctx.lineTo(x, canvas.height);
                 ctx.stroke();
             }
+            
             requestAnimationFrame(gameLoop);
         }
 
         showMenu();
-        initGame();
         requestAnimationFrame(gameLoop);
     </script>
 </body>
