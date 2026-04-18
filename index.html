@@ -2345,7 +2345,7 @@
 
                 this.elements.orbs.forEach(orb => {
                     orb.update();
-                    if (orb.checkCollision(this.player, this.player.x) && inputState.justPressed) {
+                    if (orb.checkCollision(this.player, this.player.x) && inputState.holding) {
                         orb.activate(this.player);
                     }
                 });
