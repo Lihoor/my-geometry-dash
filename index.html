@@ -262,7 +262,8 @@
         }
 
         class Block {
-            constructor(x, y, width, height) { this.x = x; this.y = canvas.height - 150 - height; this.width = width; this.height = height; }
+            constructor(x, width, height) { this.x = x; this.width = width; this.height = height; }
+            get y() { return groundY - this.height; }
             draw(cameraX) {
                 const sx = this.x - cameraX;
                 if (sx < -200 || sx > canvas.width + 200) return;
@@ -273,15 +274,11 @@
                 ctx.strokeStyle = 'rgba(255,255,255,0.3)';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(0, 0, this.width, this.height);
-                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-                for (let gx = 0; gx < this.width; gx += 25) {
-                    ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, this.height); ctx.stroke();
-                }
                 ctx.restore();
             }
             checkCollision(player) {
-                return player.x < this.x + this.width && player.x + player.width > this.x &&
-                       player.y < this.y + this.height && player.y + player.height > this.y;
+                return player.x + player.width > this.x && player.x < this.x + this.width &&
+                       player.y + player.height > this.y + 15 && player.y < this.y + this.height;
             }
         }
 
@@ -356,6 +353,7 @@
                     case 'blue': player.flipped = !player.flipped; player.velocityY = player.jumpForce * (player.flipped ? 1 : -1); break;
                     case 'green': player.velocityY = player.jumpForce * 1.3; break;
                     case 'red': player.velocityY = player.jumpForce * 1.8; player.flipped = false; break;
+                    case 'black': player.flipped = !player.flipped; player.y = player.flipped ? ceilingY + 30 : groundY - player.height - 30; break;
                 }
             }
         }
@@ -370,10 +368,13 @@
                     e.spikes.push(new Spike(x)); x += 350;
                     e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 350;
                     e.spikes.push(new Spike(x)); x += 350;
-                    e.spikes.push(new Spike(x)); x += 350;
                     e.orbs.push(new Orb(x + 120, gy - 80, 'green')); x += 350;
-                    for (let i = 0; i < 2; i++) { e.spikes.push(new Spike(x)); x += 280; } x += 200;
+                    e.spikes.push(new Spike(x)); x += 350;
                     e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 350;
+                    e.spikes.push(new Spike(x)); x += 350;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'blue')); x += 350;
+                    e.spikes.push(new Spike(x)); x += 350;
+                    e.orbs.push(new Orb(x + 120, gy - 80, 'red')); x += 350;
                     return e;
                 }
             },
@@ -383,17 +384,17 @@
                     const e = { spikes: [], blocks: [], platforms: [], orbs: [] };
                     const gy = canvas.height - 150;
                     let x = 900;
-                    for (let i = 0; i < 2; i++) { e.spikes.push(new Spike(x)); x += 280; }
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 320;
-                    e.blocks.push(new Block(x, gy - 80, 80, 80)); x += 280;
-                    e.orbs.push(new Orb(x, gy - 80, 'blue')); x += 250;
                     e.spikes.push(new Spike(x)); x += 300;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'pink')); x += 320;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 300;
                     e.spikes.push(new Spike(x)); x += 300;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'green')); x += 320;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'blue')); x += 300;
                     e.spikes.push(new Spike(x)); x += 300;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 320;
-                    e.spikes.push(new Spike(x)); x += 280;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'pink')); x += 300;
+                    e.spikes.push(new Spike(x)); x += 300;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'green')); x += 300;
+                    e.spikes.push(new Spike(x)); x += 300;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 300;
+                    e.spikes.push(new Spike(x)); x += 300;
                     return e;
                 }
             },
@@ -403,17 +404,16 @@
                     const e = { spikes: [], blocks: [], platforms: [], orbs: [] };
                     const gy = canvas.height - 150;
                     let x = 900;
-                    e.blocks.push(new Block(x, gy - 100, 80, 100)); x += 300;
-                    e.orbs.push(new Orb(x, gy - 80, 'red')); x += 250;
-                    e.spikes.push(new Spike(x)); x += 300;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'blue')); x += 320;
-                    e.spikes.push(new Spike(x)); x += 300;
-                    e.spikes.push(new Spike(x, 50)); x += 250;
-                    e.orbs.push(new Orb(x, 120, 'black')); x += 250;
-                    e.spikes.push(new Spike(x)); x += 300;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 320;
-                    e.blocks.push(new Block(x, gy - 120, 80, 120)); x += 300;
-                    e.orbs.push(new Orb(x, gy - 80, 'green')); x += 250;
+                    e.spikes.push(new Spike(x)); x += 280;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 280;
+                    e.spikes.push(new Spike(x)); x += 280;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'red')); x += 280;
+                    e.spikes.push(new Spike(x)); x += 280;
+                    e.orbs.push(new Orb(x + 100, 120, 'black')); x += 280;
+                    e.spikes.push(new Spike(x)); x += 280;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 280;
+                    e.spikes.push(new Spike(x)); x += 280;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'green')); x += 280;
                     return e;
                 }
             },
@@ -424,15 +424,15 @@
                     const gy = canvas.height - 150;
                     let x = 900;
                     e.spikes.push(new Spike(x)); x += 250;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 300;
-                    e.platforms.push(new Platform(x, gy - 200, gy - 200)); x += 300;
-                    e.orbs.push(new Orb(x, gy - 250, 'green')); x += 250;
-                    e.spikes.push(new Spike(x)); x += 280;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'pink')); x += 300;
-                    e.spikes.push(new Spike(x)); x += 280;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'blue')); x += 300;
-                    e.platforms.push(new Platform(x, gy - 180, gy - 180)); x += 300;
-                    e.orbs.push(new Orb(x, gy - 230, 'red')); x += 250;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 250;
+                    e.spikes.push(new Spike(x)); x += 250;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'pink')); x += 250;
+                    e.spikes.push(new Spike(x)); x += 250;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'blue')); x += 250;
+                    e.spikes.push(new Spike(x)); x += 250;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'red')); x += 250;
+                    e.spikes.push(new Spike(x)); x += 250;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 250;
                     return e;
                 }
             },
@@ -443,15 +443,15 @@
                     const gy = canvas.height - 150;
                     let x = 900;
                     e.spikes.push(new Spike(x)); x += 220;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'yellow')); x += 280;
-                    e.blocks.push(new Block(x, gy - 80, 80, 80)); x += 250;
-                    e.orbs.push(new Orb(x, gy - 80, 'blue')); x += 220;
-                    e.spikes.push(new Spike(x)); x += 250;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'red')); x += 280;
-                    e.spikes.push(new Spike(x, 50)); x += 220;
-                    e.orbs.push(new Orb(x, 120, 'black')); x += 220;
-                    for (let i = 0; i < 3; i++) { e.spikes.push(new Spike(x)); x += 200; } x += 200;
-                    e.orbs.push(new Orb(x + 100, gy - 80, 'green')); x += 280;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 220;
+                    e.spikes.push(new Spike(x)); x += 220;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'blue')); x += 220;
+                    e.spikes.push(new Spike(x)); x += 220;
+                    e.orbs.push(new Orb(x + 100, 120, 'black')); x += 220;
+                    e.spikes.push(new Spike(x)); x += 220;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 220;
+                    e.spikes.push(new Spike(x)); x += 220;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'green')); x += 220;
                     return e;
                 }
             },
@@ -461,18 +461,18 @@
                     const e = { spikes: [], blocks: [], platforms: [], orbs: [] };
                     const gy = canvas.height - 150;
                     let x = 900;
-                    e.platforms.push(new Platform(x, gy - 150, gy - 150)); x += 250;
-                    e.orbs.push(new Orb(x, gy - 200, 'yellow')); x += 250;
-                    e.spikes.push(new Spike(x)); x += 220;
-                    e.orbs.push(new Orb(x + 120, gy - 80, 'pink')); x += 280;
-                    for (let i = 0; i < 2; i++) { e.spikes.push(new Spike(x)); x += 200; } x += 150;
-                    e.blocks.push(new Block(x, gy - 100, 80, 100)); x += 250;
-                    e.orbs.push(new Orb(x, gy - 80, 'green')); x += 250;
-                    e.platforms.push(new Platform(x, gy - 180, gy - 100)); x += 280;
-                    e.orbs.push(new Orb(x + 50, gy - 200, 'red')); x += 250;
-                    e.spikes.push(new Spike(x)); x += 220;
-                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 280;
-                    e.spikes.push(new Spike(x)); x += 220;
+                    e.spikes.push(new Spike(x)); x += 200;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'yellow')); x += 200;
+                    e.spikes.push(new Spike(x)); x += 200;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'pink')); x += 200;
+                    e.spikes.push(new Spike(x)); x += 200;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'blue')); x += 200;
+                    e.spikes.push(new Spike(x)); x += 200;
+                    e.orbs.push(new Orb(x + 100, 120, 'black')); x += 200;
+                    e.spikes.push(new Spike(x)); x += 200;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'red')); x += 200;
+                    e.spikes.push(new Spike(x)); x += 200;
+                    e.orbs.push(new Orb(x + 100, gy - 80, 'green')); x += 200;
                     return e;
                 }
             }
