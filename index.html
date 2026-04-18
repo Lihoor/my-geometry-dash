@@ -83,8 +83,7 @@
             <p id="winStats">Attempts: 1 | Jumps: 0</p>
             <button class="menuBtn play" onclick="nextLevel()">NEXT LEVEL</button>
             <button class="menuBtn" onclick="exitToMenu()">EXIT</button>
-        </div>
-    </div>
+        
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -97,8 +96,44 @@
         window.addEventListener('resize', resizeCanvas);
 
         class AudioSystem {
-            constructor() { this.audioContext = null; this.sfxEnabled = true; }
+            constructor() { this.audioContext = null; this.sfxEnabled = true; this.musicEnabled = true; this.musicOsc = null; this.musicGain = null; }
             init() { this.audioContext = new (window.AudioContext || window.webkitAudioContext)(); }
+            startMusic() {
+                if (!this.musicEnabled || !this.audioContext || this.musicOsc) return;
+                this.musicGain = this.audioContext.createGain();
+                this.musicGain.connect(this.audioContext.destination);
+                this.musicGain.gain.value = 0.15;
+                this.playMusicNote(220, 0.4);
+                this.playMusicNote(220, 0.4);
+                this.playMusicNote(220, 0.4);
+                this.playMusicNote(262, 0.4);
+                this.playMusicNote(247, 0.4);
+                this.playMusicNote(220, 0.4);
+                this.playMusicNote(196, 0.4);
+                this.playMusicNote(220, 0.8);
+                setInterval(() => {
+                    if (gameState.isPlaying && this.musicEnabled) {
+                        this.playMusicNote(220, 0.4);
+                        this.playMusicNote(262, 0.2);
+                        this.playMusicNote(220, 0.4);
+                        this.playMusicNote(196, 0.2);
+                    }
+                }, 800);
+            }
+            playMusicNote(freq, duration) {
+                if (!this.audioContext || !this.musicEnabled) return;
+                const osc = this.audioContext.createOscillator();
+                const gain = this.audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(this.musicGain);
+                osc.type = 'square';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+                gain.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + duration);
+                osc.start();
+                osc.stop(this.audioContext.currentTime + duration);
+            }
+            stopMusic() { this.musicOsc = null; }
             createOscillator(freq, type, duration, volume = 0.3) {
                 if (!this.sfxEnabled || !this.audioContext) return;
                 const osc = this.audioContext.createOscillator();
@@ -542,6 +577,9 @@
             levelLength = 8000;
             game.camera.x = 0;
             audio.init();
+            
+            // Play background music
+            audio.startMusic();
         }
 
         function restartLevel() {
@@ -588,7 +626,11 @@
             else showMenu();
         }
 
-        function exitToMenu() { gameState.isPlaying = false; showMenu(); }
+        function exitToMenu() { 
+            gameState.isPlaying = false; 
+            audio.musicEnabled = false;
+            showMenu(); 
+        }
 
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
